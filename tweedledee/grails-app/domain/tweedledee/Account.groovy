@@ -9,7 +9,7 @@ class Account {
     Date dateCreated
 
     static hasMany = [ followers : Account, following : Account, messages : Message ]
-    
+
     static mapping = {
         messages sort:'dateCreated'
     }

@@ -1,22 +1,17 @@
 package tweedledee
 
 import grails.test.mixin.TestFor
+import grails.test.mixin.TestMixin
+import grails.test.mixin.domain.DomainClassUnitTestMixin
 import spock.lang.Specification
 
-/**
- * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
- */
 @TestFor(Account)
+@TestMixin(DomainClassUnitTestMixin)
 class AccountSpec extends Specification {
 
-    def setup() {
+    def 'Account saves when required valid fields are specified'(){
+        given:
+            def account1 = new Account(handle:'TheBigEz',)
     }
 
-    def cleanup() {
-    }
-
-    void "test something"() {
-        expect:"fix me"
-            true == false
-    }
 }
