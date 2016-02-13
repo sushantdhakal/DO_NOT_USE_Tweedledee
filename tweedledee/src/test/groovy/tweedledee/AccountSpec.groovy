@@ -68,6 +68,38 @@ class AccountSpec extends Specification {
 
     }
 
+    /**
+     * Test 3
+     * Requirement: A3
+     * Desc: Save account fails if an invalid password is entered
+     */
+
+    def'Account save fails if invalid password is entered'(){
+
+        given:
+
+        def aParams = [ handle : "TedX9", name : "Ted", email : "ted@bla.com", password : testPassword ]
+        def acct = new Account(aParams)
+        acct.save()
+
+        expect:
+
+        def testHasFailed = !(acct.hasErrors() == accountSaveFail)
+        if(testHasFailed==true){
+            println ''
+            println 'The '+desc.toUpperCase()+' test failed.'+'\npassword = '+testPassword
+        }
+        acct.hasErrors() == accountSaveFail
+
+        where:
+
+        desc                      |  testPassword                | accountSaveFail
+        "less than 8 chars"       |  "1234567"                   | true
+        "over than 16 chars"      |  "123456789012345678"        | true
+        "no upper case chars"     |  "12345678a"                 | true
+        "no lower case chars"     |  "12345678A"                 | true
+
+    }
 
 }
 
