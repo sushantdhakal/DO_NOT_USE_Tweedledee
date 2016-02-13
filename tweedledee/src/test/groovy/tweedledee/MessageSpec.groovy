@@ -1,40 +1,72 @@
 package tweedledee
 
 import grails.test.mixin.TestFor
+import grails.test.mixin.TestMixin
+import grails.test.mixin.domain.DomainClassUnitTestMixin
 import spock.lang.Specification
+import spock.lang.Unroll
 
-/**
- * See the API for {@link grails.test.mixin.domain.DomainClassUnitTestMixin} for usage instructions
- */
 @TestFor(Message)
+@TestMixin(DomainClassUnitTestMixin)
 class MessageSpec extends Specification {
 
-    def setup() {
-    }
+    /**
+     * Test 1
+     * Requirement: M1
+     * Desc: Save message when all required fields are specified
+     */
 
-    def cleanup() {
+    def 'Message saves when required fields are specified'(){
+
+        given:
+        
+        def acct = Mock(Account)
+        def mText = "This is a tweet, yo"
+        def mParams = [ account:acct, text:mText ]
+        def mesg = new Message(mParams)
+
+        when:
+        mesg.save()
+
+        then:
+        mesg.id
+        !mesg.hasErrors()
+
     }
 
     /**
-     * Data driven test to check for message that cannot be black and should be less than 40 characters
-     * Assignment req.# M2 PASSING CONDITION
-     * @return
+     * Test 2
+     * Requirement: M2
+     * Desc: Data driven test on save message with both valid and invalid values for 'text' property
      */
-    def "message text need to be non-blank and 40 chars long"(){
+
+    @Unroll
+    def 'Message saves when all required fields are entered with valid data'(){
+
         given:
-        def messageText = new Message()
-        messageText.setText(b)
+
+        def acct = Mock(Account)
+        def mParams = [ account:acct, text:mText ]
+        def mesg = new Message(mParams)
+        mesg.save()
+
         expect:
-        b.length()<=lengthOfMessage
-        !b.isEmpty()
+
+        def testHasFailed = !(mesg.hasErrors() == mesgSaveFailed)
+        if(testHasFailed==true){
+            println ''
+            println 'The '+desc.toUpperCase()+' test failed.'+' \nmessage = '+mText
+        }
+        mesg.hasErrors() == mesgSaveFailed
 
         where:
-        b||lengthOfMessage
-        'ThisIsAStringThatIsLessThan40CharsLong'|40
+
+        desc                        | mText                                              |   mesgSaveFailed
+        "null value"                | null                                               |   true
+        "0 characters"              | ""                                                 |   true
+        "42 characters"             | "1234567890123456789012345678901234567890 1"       |   true
+        "40 characters"             | "1234567890123456789012345678901234567890"         |   false
+
     }
 
-    void "test something"() {
-        expect:"fix me"
-            true == false
-    }
 }
