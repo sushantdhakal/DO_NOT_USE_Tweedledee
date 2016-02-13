@@ -57,6 +57,32 @@ class AccountIntTestSpec extends Specification {
 
     /**
      * Test 3
+     * Requirement: F1
+     * Desc:  An account may have multiple followers
+     */
+
+    def ' An account may have multiple followers'() {
+        setup:
+        def firstAccount = new Account(handle: 'superman', name: 'Clark Kent', email: 'kent@krypton.com', password: 'Banana1234')
+        def secondAcount = new Account(handle: 'batman', name: 'Bruce Wayne', email: 'wayne@gotham.net', password: 'Orange1234')
+        def thirdAccount = new Account(handle: 'IamLexLuther', name: 'Lex Luther', email: 'lexwillruleall@gmail.com', password: 'IamCrazy1234')
+        def fourthAccount = new Account(handle: 'FunnyMan', name: 'Joker Jack', email: 'jjFunny@aol.com', password: 'Hahahaha12345')
+
+        firstAccount.following = [secondAcount, thirdAccount, fourthAccount] as Set<Account>
+
+        when:
+        firstAccount.save(failOnError: true)
+        secondAcount.save(failOnError: true)
+        thirdAccount.save(failOnError: true)
+        fourthAccount.save(failOnError: true)
+
+        then:
+        print(firstAccount.name + "'s followers are: ")
+        firstAccount.following.each {follower -> print "${follower.name + ', '}"}
+    }
+
+    /**
+     * Test 4
      * Requirement: F2
      * Desc: Two accounts may follow each other
      */
@@ -73,10 +99,10 @@ class AccountIntTestSpec extends Specification {
         secondAcount.save(failOnError: true)
 
         then:
-        print(firstAccount.name + "'s followers are: ")
+        print(firstAccount.name + "'s follower is: ")
                 firstAccount.following.each {follower -> println "${follower.name}"}
 
-        print(secondAcount.name + "'s followers are: ")
+        print(secondAcount.name + "'s follower is: ")
         secondAcount.following.each {follower -> println "${follower.name}"}
     }
 }
