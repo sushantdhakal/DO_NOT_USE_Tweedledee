@@ -12,24 +12,23 @@ class MessageSpec extends Specification {
 
     /**
      * Test 1
-     * Requirement: M1, successful case
+     * Requirement: M1
      * Desc: Save message when all required fields are specified
      */
 
     def 'Message saves when required fields are specified'(){
 
         given:
-
-        def acct = new Account(handle:'TheBigEz', name:'Tommy Kramer', email:'thekramster@bigman.net', password:'123456aA')
-        def mParam = [ text:'abc123',account:acct ]
-        def mesg = new Message(mParam)
+        
+        def acct = Mock(Account)
+        def mText = "This is a tweet, yo"
+        def mParams = [ account:acct, text:mText ]
+        def mesg = new Message(mParams)
 
         when:
-
         mesg.save()
 
         then:
-
         mesg.id
         !mesg.hasErrors()
 
@@ -37,54 +36,6 @@ class MessageSpec extends Specification {
 
     /**
      * Test 2
-     * Requirement: M1, failure case
-     * Desc: Save message when all required fields are not specified (missing text property)
-     */
-
-    def 'Message saves fails when required text field is not specified'(){
-
-        given:
-
-        def acct = new Account(handle:'TheBigEz', name:'Tommy Kramer', email:'thekramster@bigman.net', password:'123456aA')
-        def mesg = new Message(account:acct)
-
-        when:
-
-        mesg.save()
-
-        then:
-
-        !mesg.id
-        mesg.hasErrors()
-
-    }
-
-    /**
-     * Test 3
-     * Requirement: M1, failure case
-     * Desc: Save message when all required fields are not specified (account text property)
-     */
-
-    def 'Message saves fails when required account field is not specified'(){
-
-        given:
-
-        def acct = new Account(handle:'TheBigEz', name:'Tommy Kramer', email:'thekramster@bigman.net', password:'123456aA')
-        def mesg = new Message(text:'abc123')
-
-        when:
-
-        mesg.save()
-
-        then:
-
-        !mesg.id
-        mesg.hasErrors()
-
-    }
-
-    /**
-     * Test 4
      * Requirement: M2
      * Desc: Data driven test on save message with both valid and invalid values for 'text' property
      */
@@ -94,7 +45,7 @@ class MessageSpec extends Specification {
 
         given:
 
-        def acct = new Account()
+        def acct = Mock(Account)
         def mParams = [ account:acct, text:mText ]
         def mesg = new Message(mParams)
         mesg.save()
