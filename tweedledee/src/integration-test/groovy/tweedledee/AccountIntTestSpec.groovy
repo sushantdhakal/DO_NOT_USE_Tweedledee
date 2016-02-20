@@ -1,18 +1,17 @@
 package tweedledee
 
-import grails.test.mixin.TestFor
 import grails.test.mixin.integration.Integration
-import grails.transaction.*
-import spock.lang.*
+import grails.transaction.Rollback
+import spock.lang.Specification
 
 @Integration
 @Rollback
 class AccountIntTestSpec extends Specification {
 
-    def setup() {
-    }
+    def accountsBeforeSaves
 
-    def cleanup() {
+    def setup() {
+        accountsBeforeSaves = Account.count()
     }
 
     /**
@@ -20,12 +19,10 @@ class AccountIntTestSpec extends Specification {
      * Requirement: A4
      * Desc: Saving account with unique e-mail but non-unique handle
      */
-
     def 'Saving account with unique e-mail but non-unique handle'() {
         setup:
         def firstAccount = new Account(handle: 'TheRealSeanJohnson', name: 'Sean Johnson', email: 'johnsanSean@gmail.com', password: 'Orange1234')
         def secondAccount = new Account(handle: 'TheRealSeanJohnson', name: 'Sean Johnson', email: 'seanJohnson@gmail.com', password: 'Orange1234')
-
 
         when:
         firstAccount.save(failOnError: false)
@@ -34,6 +31,8 @@ class AccountIntTestSpec extends Specification {
         then:
         firstAccount.id
         !secondAccount.id
+        secondAccount.errors.getFieldError('handle')
+        Account.count() == accountsBeforeSaves + 1
     }
 
     /**
@@ -55,6 +54,8 @@ class AccountIntTestSpec extends Specification {
         then:
         firstAccount.id
         !secondAccount.id
+        secondAccount.errors.getFieldError('email')
+        Account.count() == accountsBeforeSaves + 1
     }
 
     /**
@@ -70,7 +71,7 @@ class AccountIntTestSpec extends Specification {
         def thirdAccount = new Account(handle: 'IamLexLuther', name: 'Lex Luther', email: 'lexwillruleall@gmail.com', password: 'IamCrazy1234')
         def fourthAccount = new Account(handle: 'FunnyMan', name: 'Joker Jack', email: 'jjFunny@aol.com', password: 'Hahahaha12345')
 
-        firstAccount.following = [secondAccount, thirdAccount, fourthAccount] as Set<Account>
+        [secondAccount, thirdAccount, fourthAccount].each { firstAccount.addToFollowers(it) }
 
         when:
         firstAccount.save(failOnError: true)
@@ -78,9 +79,14 @@ class AccountIntTestSpec extends Specification {
         thirdAccount.save(failOnError: true)
         fourthAccount.save(failOnError: true)
 
+        and:
+        firstAccount = Account.get(firstAccount.id)
+
         then:
-        print(firstAccount.name + "'s followers are: ")
-        firstAccount.following.each {follower -> print "${follower.name + ', '}"}
+        firstAccount.followers.size() == 3
+        firstAccount.followers.find { it.id == secondAccount.id }
+        firstAccount.followers.find { it.id == thirdAccount.id }
+        firstAccount.followers.find { it.id == fourthAccount.id }
     }
 
     /**
@@ -93,18 +99,21 @@ class AccountIntTestSpec extends Specification {
         setup:
         def firstAccount = new Account(handle: 'superman', name: 'Clark Kent', email: 'kent@krypton.com', password: 'Banana1234')
         def secondAccount = new Account(handle: 'batman', name: 'Bruce Wayne', email: 'wayne@gotham.net', password: 'Orange1234')
-        firstAccount.following = [secondAccount] as Set<Account>
-        secondAccount.following = [firstAccount] as Set<Account>
+        firstAccount.addToFollowers(secondAccount)
+        secondAccount.addToFollowers(firstAccount)
 
         when:
         firstAccount.save(failOnError: true)
         secondAccount.save(failOnError: true)
 
-        then:
-        print(firstAccount.name + "'s follower is: ")
-                firstAccount.following.each {follower -> println "${follower.name}"}
+        and:
+        firstAccount = Account.get(firstAccount.id)
+        secondAccount = Account.get(secondAccount.id)
 
-        print(secondAccount.name + "'s follower is: ")
-        secondAccount.following.each {follower -> println "${follower.name}"}
+        then:
+        firstAccount.followers.size() == 1
+        firstAccount.followers.find { it.id == secondAccount.id }
+        secondAccount.followers.size() == 1
+        secondAccount.followers.find { it.id == firstAccount.id }
     }
 }

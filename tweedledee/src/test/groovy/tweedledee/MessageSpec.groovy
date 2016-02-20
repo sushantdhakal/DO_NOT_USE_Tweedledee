@@ -10,6 +10,12 @@ import spock.lang.Unroll
 @TestMixin(DomainClassUnitTestMixin)
 class MessageSpec extends Specification {
 
+    def messagesBeforeSave
+
+    def setup() {
+        messagesBeforeSave = Message.count()
+    }
+
     /**
      * Test 1
      * Requirement: M1
@@ -19,9 +25,8 @@ class MessageSpec extends Specification {
     def 'Message saves when required fields are specified'(){
 
         given:
-        
         def acct = Mock(Account)
-        def mText = "This is a tweet, yo"
+        def mText = '1'*40
         def mParams = [ account:acct, text:mText ]
         def mesg = new Message(mParams)
 
@@ -31,7 +36,8 @@ class MessageSpec extends Specification {
         then:
         mesg.id
         !mesg.hasErrors()
-
+        Message.count() == messagesBeforeSave + 1
+        Message.get(mesg.id)
     }
 
     /**
@@ -39,9 +45,8 @@ class MessageSpec extends Specification {
      * Requirement: M2
      * Desc: Data driven test on save message with both valid and invalid values for 'text' property
      */
-
     @Unroll
-    def 'Message saves when all required fields are entered with valid data'(){
+    def 'Message saves when all required fields are entered with valid data: #desc'(){
 
         given:
 
@@ -51,6 +56,7 @@ class MessageSpec extends Specification {
         mesg.save()
 
         expect:
+        mesg.hasErrors()
 
         def testHasFailed = !(mesg.hasErrors() == mesgSaveFailed)
         if(testHasFailed==true){
@@ -60,13 +66,10 @@ class MessageSpec extends Specification {
         mesg.hasErrors() == mesgSaveFailed
 
         where:
-
-        desc                        | mText                                              |   mesgSaveFailed
-        "null value"                | null                                               |   true
-        "0 characters"              | ""                                                 |   true
-        "42 characters"             | "1234567890123456789012345678901234567890 1"       |   true
-        "40 characters"             | "1234567890123456789012345678901234567890"         |   false
-
+        desc              | mText
+        "null value"      | null
+        "0 characters"    | ''
+        "42 characters"   | '1'*42
     }
 
 }
