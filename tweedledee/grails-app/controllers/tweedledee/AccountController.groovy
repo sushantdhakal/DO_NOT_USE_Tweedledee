@@ -1,17 +1,16 @@
 package tweedledee
 
-import grails.rest.*
+import grails.rest.RestfulController
 
-class AccountController extends RestfulController {
+class AccountController extends RestfulController<Account> {
     
     static responseFormats = ['json', 'xml']
     
-    def 
     AccountController() {
         super(Account)
     }
 
-    @Override
+   @Override
     protected Account queryForResource(Serializable id) {
         Account.where { id == id }.find()
     }
