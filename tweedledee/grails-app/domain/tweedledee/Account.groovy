@@ -1,5 +1,8 @@
 package tweedledee
 
+//import grails.rest.Resource
+
+//@Resource(uri='/account', formats=['json'])
 class Account {
 
     String handle

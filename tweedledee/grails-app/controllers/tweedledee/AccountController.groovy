@@ -1,107 +1,18 @@
 package tweedledee
 
-import static org.springframework.http.HttpStatus.*
-import grails.transaction.Transactional
+import grails.rest.RestfulController
 
-@Transactional(readOnly = true)
-class AccountController {
-
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
-
-    def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        respond Account.list(params), model:[accountCount: Account.count()]
+class AccountController extends RestfulController<Account> {
+    
+    static responseFormats = ['json', 'xml']
+    
+    AccountController() {
+        super(Account)
     }
 
-    def show(Account account) {
-        respond account
+   @Override
+    protected Account queryForResource(Serializable id) {
+        Account.where { id == id }.find()
     }
 
-    def create() {
-        respond new Account(params)
-    }
-
-    @Transactional
-    def save(Account account) {
-        if (account == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
-            return
-        }
-
-        if (account.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond account.errors, view:'create'
-            return
-        }
-
-        account.save flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: 'account.label', default: 'Account'), account.id])
-                redirect account
-            }
-            '*' { respond account, [status: CREATED] }
-        }
-    }
-
-    def edit(Account account) {
-        respond account
-    }
-
-    @Transactional
-    def update(Account account) {
-        if (account == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
-            return
-        }
-
-        if (account.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond account.errors, view:'edit'
-            return
-        }
-
-        account.save flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: 'account.label', default: 'Account'), account.id])
-                redirect account
-            }
-            '*'{ respond account, [status: OK] }
-        }
-    }
-
-    @Transactional
-    def delete(Account account) {
-
-        if (account == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
-            return
-        }
-
-        account.delete flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: 'account.label', default: 'Account'), account.id])
-                redirect action:"index", method:"GET"
-            }
-            '*'{ render status: NO_CONTENT }
-        }
-    }
-
-    protected void notFound() {
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.not.found.message', args: [message(code: 'account.label', default: 'Account'), params.id])
-                redirect action: "index", method: "GET"
-            }
-            '*'{ render status: NOT_FOUND }
-        }
-    }
 }

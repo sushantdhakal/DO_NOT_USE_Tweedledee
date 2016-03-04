@@ -1,107 +1,54 @@
 package tweedledee
 
 import static org.springframework.http.HttpStatus.*
-import grails.transaction.Transactional
+import grails.rest.RestfulController
 
-@Transactional(readOnly = true)
-class MessageController {
+class MessageController extends RestfulController<Message> {
+    
+    static responseFormats = ['json', 'xml']
 
-    static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+    MessageController() {
+        super(Message)
+    }
 
-    def index(Integer max) {
-        params.max = Math.min(max ?: 10, 100)
-        respond Message.list(params), model:[messageCount: Message.count()]
+    def index() {
+        def accountID=params.accountId
+        def mesg=Message.where { account.id == accountID }.findAll()
+        if(mesg==[]){
+            respond status:"NOT_FOUND",message:"No messages found for this account."
+            return
+        }
+        respond mesg,[status:OK]
     }
 
     def show(Message message) {
-        respond message
+        //def accountID = params.accountId
+        //Message.where { account.id == accountID }.find()
+        respond status:"show"
     }
 
-    def create() {
-        respond new Message(params)
+    @Override
+    protected Message queryForResource(Serializable id) {
+        def accountID = params.accountId
+        Message.where { id == id && account.id == accountID }.find()
     }
 
-    @Transactional
-    def save(Message message) {
-        if (message == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
+    @Override
+    protected Message createResource() {
+        def t=request.JSON.text
+        if(!t||t.size()>40){
+            respond status:"ERROR",message:"The message must have between 1 and 40 characters to be valid."
             return
         }
-
-        if (message.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond message.errors, view:'create'
+        def a=params.accountId
+        def b=Account.get(a)
+        if(!a||!b){
+            respond status:"ERROR",message:"The message must be associated to a valid account."
             return
         }
-
-        message.save flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.created.message', args: [message(code: 'message.label', default: 'Message'), message.id])
-                redirect message
-            }
-            '*' { respond message, [status: CREATED] }
-        }
+        def p=[text:t,account:[id:a]]
+        new Message(p)
     }
+    
 
-    def edit(Message message) {
-        respond message
-    }
-
-    @Transactional
-    def update(Message message) {
-        if (message == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
-            return
-        }
-
-        if (message.hasErrors()) {
-            transactionStatus.setRollbackOnly()
-            respond message.errors, view:'edit'
-            return
-        }
-
-        message.save flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.updated.message', args: [message(code: 'message.label', default: 'Message'), message.id])
-                redirect message
-            }
-            '*'{ respond message, [status: OK] }
-        }
-    }
-
-    @Transactional
-    def delete(Message message) {
-
-        if (message == null) {
-            transactionStatus.setRollbackOnly()
-            notFound()
-            return
-        }
-
-        message.delete flush:true
-
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.deleted.message', args: [message(code: 'message.label', default: 'Message'), message.id])
-                redirect action:"index", method:"GET"
-            }
-            '*'{ render status: NO_CONTENT }
-        }
-    }
-
-    protected void notFound() {
-        request.withFormat {
-            form multipartForm {
-                flash.message = message(code: 'default.not.found.message', args: [message(code: 'message.label', default: 'Message'), params.id])
-                redirect action: "index", method: "GET"
-            }
-            '*'{ render status: NOT_FOUND }
-        }
-    }
 }

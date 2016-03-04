@@ -58,13 +58,6 @@ class MessageSpec extends Specification {
         expect:
         mesg.hasErrors()
 
-        def testHasFailed = !(mesg.hasErrors() == mesgSaveFailed)
-        if(testHasFailed==true){
-            println ''
-            println 'The '+desc.toUpperCase()+' test failed.'+' \nmessage = '+mText
-        }
-        mesg.hasErrors() == mesgSaveFailed
-
         where:
         desc              | mText
         "null value"      | null

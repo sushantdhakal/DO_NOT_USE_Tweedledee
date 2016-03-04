@@ -1,16 +1,21 @@
-package tweedledee
 
 class UrlMappings {
-
+    
     static mappings = {
-        "/$controller/$action?/$id?(.$format)?"{
-            constraints {
+        //"/$controller/$action?/$id?"{
+           // constraints {
                 // apply constraints here
-            }
-        }
-
+           // }
+        //}
         "/"(view:"/index")
         "500"(view:'/error')
-        "404"(view:'/notFound')
+
+        // REST API Mappings
+        "/accounts"(resources:'account'){
+        	"/messages"(resources:'message')
+        }
+        
+
     }
 }
+
