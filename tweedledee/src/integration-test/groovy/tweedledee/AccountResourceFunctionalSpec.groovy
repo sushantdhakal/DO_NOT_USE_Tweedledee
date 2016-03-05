@@ -84,13 +84,33 @@ class AccountResourceFunctionalSpec extends GebSpec {
   /**
    * Test 1.2
    * Requirement: A1
-   * Desc: Retrieves a saved account resource
+   * Desc: Retrieves a saved account resource by id
    */
-  def 'gets a new account'() {
+  def 'gets a new account by id'() {
     
     when:
-    def resp = restClient.get(path: "${accountResource}/${accountId}")
+    def resp = restClient.get(path: "/accounts/${accountId}")
 
+    then:
+    resp.status == 200
+    resp.data.id == accountId
+    resp.data.handle == validAccountData.handle
+    resp.data.name == validAccountData.name
+    resp.data.email == validAccountData.email
+    resp.data.password == validAccountData.password
+
+  }
+
+  /**
+   * Test 1.2.1
+   * Requirement: A1
+   * Desc: Retrieves a saved account resource by handle
+   */
+  def 'gets a new account by handle'() {
+    
+    when:
+    def resp = restClient.get(path: "/account/handle/${validAccountData.handle}" )
+    
     then:
     resp.status == 200
     resp.data.id == accountId
@@ -146,7 +166,8 @@ class AccountResourceFunctionalSpec extends GebSpec {
     restClient.get(path: "${accountResource}/${accountId}")
 
     then:
-    thrown(HttpResponseException)
+    HttpResponseException problem = thrown(HttpResponseException)
+    problem.statusCode == 404
 
     when:
     resp = restClient.get(path: "${accountResource}")
