@@ -8,14 +8,16 @@ class UrlMappings {
             }
         }*/
         "/"(view:"/index")
-        "500"(view:'/error')
-
-        //"/accounts"(controller:'account',action:'index',parseRequest:true)
+        "500"(controller:'error',action:'server')
+        "401"(controller:'error',action:'unauthorized')
+        "403"(controller:'error',action:'forbidden')
+        "404"(controller:'error',action:'notfound')
+        "405"(controller:'error',action:'notallowed')
 
         "/accounts"(resources:'account'){
             "/messages"(resources:'message')
         }
-        //"/account"(controller:"account",action:"testme",parseRequest:true)
+
         group("/account") {
             "/handle/$id?"(controller:'account',action:'accountByHandle')
         }

@@ -12,19 +12,16 @@ class MessageController extends RestfulController<Message> {
     }
 
     def index() {
+
         def accountID=params.accountId
         def mesg=Message.where { account.id == accountID }.findAll()
-        if(mesg==[]){
-            respond status:"NOT_FOUND",message:"No messages found for this account."
+        if(mesg){
+            respond mesg
             return
         }
-        respond mesg,[status:OK]
-    }
+        respond null
 
-    def show(Message message) {
-        //def accountID = params.accountId
-        //Message.where { account.id == accountID }.find()
-        respond status:"show"
+
     }
 
     @Override
@@ -37,13 +34,13 @@ class MessageController extends RestfulController<Message> {
     protected Message createResource() {
         def t=request.JSON.text
         if(!t||t.size()>40){
-            respond status:"ERROR",message:"The message must have between 1 and 40 characters to be valid."
+            respond error:404,message:"The message must have between 1 and 40 characters to be valid."
             return
         }
         def a=params.accountId
         def b=Account.get(a)
         if(!a||!b){
-            respond status:"ERROR",message:"The message must be associated to a valid account."
+            respond error:404,message:"The message must be associated to a valid account."
             return
         }
         def p=[text:t,account:[id:a]]

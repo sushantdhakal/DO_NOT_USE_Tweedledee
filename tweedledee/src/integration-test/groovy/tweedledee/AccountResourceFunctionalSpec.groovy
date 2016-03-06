@@ -166,8 +166,8 @@ class AccountResourceFunctionalSpec extends GebSpec {
     restClient.get(path: "${accountResource}/${accountId}")
 
     then:
-    HttpResponseException problem = thrown(HttpResponseException)
-    problem.statusCode == 404
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode > 399
 
     when:
     resp = restClient.get(path: "${accountResource}")
