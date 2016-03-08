@@ -21,18 +21,19 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
   @Shared
   def accountId
+
+  @Shared
+  def accountHandle
   
   @Shared
   def messageId
   
   def validAccountData
-  def accountResource
+
   RESTClient restClient
 
   def setup() {
     
-    accountResource = '/accounts'
-
     restClient = new RESTClient(baseUrl)
 
     validAccountData = [ handle:'Hulk77', name:'Hulk Hogan', email:'thehulkster@hulkomania.me', password:'12345678aA' ]
@@ -44,16 +45,18 @@ class MessageResourceFunctionalSpec extends GebSpec {
         when:
         def account = new Account( validAccountData )
         def json = account as JSON
-        def resp = restClient.post(path: "${accountResource}", body: json as String, requestContentType: 'application/json')
+        def resp = restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
 
         then:
         resp.status == 201
 
         when:
         accountId = resp.data.id
+        accountHandle = resp.data.handle
 
         then:
         accountId
+        accountHandle
 
     }
 
@@ -65,7 +68,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
   def 'returns error when no messages found for an account'() {
 
     when:
-    def resp = restClient.get( path: "${accountResource}/${accountId}/messages" )
+    def resp = restClient.get( path: "/account/${accountId}/messages" )
 
     then:
     HttpResponseException err = thrown(HttpResponseException)
@@ -85,7 +88,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
     def json = mesg as JSON
 
     when:
-    def resp = restClient.post( path: "${accountResource}/${accountId}/messages", body: json as String, requestContentType: 'application/json' )
+    def resp = restClient.post( path: "/account/${accountId}/messages", body: json as String, requestContentType: 'application/json' )
 
     then:
     resp.status == 201
@@ -104,10 +107,26 @@ class MessageResourceFunctionalSpec extends GebSpec {
      * Requirement: M2
      * Desc: Retrieve a saved message
      */
-    def 'fetch a saved a message'() {
+    def 'fetch a saved a message for an account by id'() {
 
         when:
-        def resp = restClient.get( path: "${accountResource}/${accountId}/messages/${messageId}" )
+        def resp = restClient.get( path: "/account/${accountId}/message/${messageId}" )
+
+        then:
+        resp.status == 200
+        resp.data.id == messageId
+
+    }
+
+    /**
+     * Test 2.1.1
+     * Requirement: M2
+     * Desc: Retrieve a saved message
+     */
+    def 'fetch a saved a message for an account by hande'() {
+
+        when:
+        def resp = restClient.get( path: "/account/${accountHandle}/message/${messageId}" )
 
         then:
         resp.status == 200
@@ -127,13 +146,13 @@ class MessageResourceFunctionalSpec extends GebSpec {
         def json = mesg as JSON
 
         when:
-        def resp = restClient.put( path: "${accountResource}/${accountId}/messages/${messageId}", body: json as String, requestContentType: 'application/json' )
+        def resp = restClient.put( path: "/account/${accountId}/message/${messageId}", body: json as String, requestContentType: 'application/json' )
 
         then:
         resp.status == 200
         
         when:
-        resp = restClient.get(path: "${accountResource}/${accountId}/messages/${messageId}")
+        resp = restClient.get(path: "/account/${accountId}/message/${messageId}")
 
         then:
         resp.status == 200
@@ -148,13 +167,13 @@ class MessageResourceFunctionalSpec extends GebSpec {
     def 'deletes a message'() {
 
         when:
-        def resp = restClient.delete(path: "${accountResource}/${accountId}/messages/${messageId}")
+        def resp = restClient.delete(path: "/account/${accountId}/message/${messageId}")
 
         then:
         resp.status == 204
 
         when:
-        restClient.get(path: "${accountResource}/${accountId}/messages/${messageId}")
+        restClient.get(path: "/account/${accountId}/messages/${messageId}")
 
         then:
         HttpResponseException err = thrown(HttpResponseException)

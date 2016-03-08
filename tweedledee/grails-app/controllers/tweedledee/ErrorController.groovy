@@ -2,6 +2,8 @@ package tweedledee
 
 class ErrorController {
 
+	static allowedMethods = [get: "GET"]
+
 	def server(){
 		render error:500,message:'Server Error'
 	}
@@ -16,6 +18,9 @@ class ErrorController {
 	}
 	def notallowed(){
 		render error:405,message:'Request Not Allowed'
+	}
+	def unprocessable(){
+		render error:422,message:'Request was well-formed but was unable to be followed due to semantic errors. Most likely due to passing an incorrect or invalid value.'
 	}
 
 }

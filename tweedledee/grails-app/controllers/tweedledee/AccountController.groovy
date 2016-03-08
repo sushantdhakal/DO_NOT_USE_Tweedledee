@@ -1,6 +1,5 @@
 package tweedledee
 
-import grails.web.RequestParameter
 import grails.rest.RestfulController
 
 class AccountController extends RestfulController<Account> {
@@ -11,30 +10,30 @@ class AccountController extends RestfulController<Account> {
         super(Account)
     }
 
-    def accountByHandle(){
-
-        def handle=params.id
-        if(handle) {
-            def acct = Account.where { handle == handle }.find()
-            if (acct) {
-                respond acct
-                return
-            } else {
-                respond error:404,message:"Account was not found for handle $handle"
-                return
-            }
-        } else {
-            respond error:404,message:"No handle was passed in the request"
-            return
-        }
-
-    }
-
     @Override
     def index(final Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond Account.list(params), model:[accoutCount: Account.count()]
+        if(params.id || params.handle) _handleParams(params)
+        else respond Account.list(params), model:[accoutCount: Account.count()]
     }
 
+    @Override
+    def show(){
+        if(params.id) _handleParams(params)
+        else _respondError(404,"No account found")    
+    }
 
+    private _handleParams(Map params){
+        def isNum = (params.id) ? (params.id as String).isNumber() : false
+        if(params.id && isNum) respond Account.get(params.id)
+        else if(params.id && !isNum) respond Account.findByHandle(params.id)
+        else if(params.handle) respond Account.findByHandle(params.handle)
+        else _respondError(404,"No accounts found")
+    }
+
+    private _respondError(code,mesg){
+        response.status=code
+        respond error:code,message:"$mesg"
+    }
+    
 }
