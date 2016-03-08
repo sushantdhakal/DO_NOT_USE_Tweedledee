@@ -13,6 +13,9 @@ class UrlMappings {
             "/message"(resources:'message')
             "/messages"(resources:'message')
         }
+        "/account/$accountId/follow"(controller:'account',action:'addFollower')
+        "/account/$accountId/followers"(controller:'account',action:'showFollowers')
+        "/account/$accountId/following"(controller:'account',action:'showFollowing')
         "/account/$accountId/tweet"(controller:'message',action:'save')
         "/accounts"(controller:'account',action:'list')
         "/accounts/$id"(controller:'account',action:'show')
