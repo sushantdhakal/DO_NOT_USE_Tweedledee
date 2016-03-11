@@ -19,6 +19,8 @@ class UrlMappings {
         "/account/$accountId/tweet"(controller:'message',action:'save')
         "/accounts"(controller:'account',action:'list')
         "/accounts/$id"(controller:'account',action:'show')
+
+         "/message/${accountId}/messages"(controller:'message',action:'lastTenMessages')
     } 
 }
 

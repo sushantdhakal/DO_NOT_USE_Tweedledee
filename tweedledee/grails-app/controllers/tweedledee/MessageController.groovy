@@ -71,6 +71,31 @@ class MessageController extends RestfulController<Message> {
         }
     }
 
+    /**
+     * Requirement
+     * @return
+     */
+
+    def lastTenMessages(){
+
+        def accountID=params.accountId
+        def account=Account.get(accountID)
+
+        if(params.accountId){
+
+            def mesgArr = Message.where { account.id == accountID }.findAll()
+            def mesg = Message.where { account.id == accountID }.list(max: 10, offset: 10)
+            if(mesg) {
+                render mesg.text as String
+            }
+
+            else{
+                _respondError(404,"No messages found")
+            }
+        }
+    }
+
+
     private _respondError(code,mesg){
         response.status=code
         respond error:code,message:"$mesg"

@@ -134,6 +134,25 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     }
 
+   /* def 'get last ten messages'(){
+        given:
+        def mesg = [text:'This is a new message for you']
+        def json = mesg as JSON
+
+        when:
+        def resp = restClient.post( path: "/account/${accountId}/messages", body: json as String, requestContentType: 'application/json' )
+
+        then:
+        resp.status == 201
+        resp.data
+
+        when:
+        def resp1 = restClient.get( path: "/message/${accountId}/messages")
+
+        then:
+        resp1.status == 201
+    }*/
+
     /**
      * Test 2.2
      * Requirement: M2
