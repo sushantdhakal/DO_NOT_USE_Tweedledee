@@ -14,7 +14,7 @@ class MessageController extends RestfulController<Message> {
     @Override
     def index(final Integer max) {
         if(params.accountId){
-            params.max = Math.min(max ?: 10, 100)
+            params.max = Math.min(max?:10,100)
             def accountID = _handleAccountId(params.accountId)
             def mesg=Message.where { account.id == accountID }.list(params)
             if(mesg) respond mesg
@@ -27,7 +27,27 @@ class MessageController extends RestfulController<Message> {
     def show(){
         def id=params.id
         def accountID = _handleAccountId(params.accountId)
-        respond Message.where { id == id && account.id == accountID }.find()
+        def mesg=Message.where { id == id && account.id == accountID }.find()
+        respond _formatMessage(mesg)
+    }
+
+    def lastTenMessages(final Integer max,final Integer offset){
+        def limit = Math.min(max?:10,100)
+        def os = (offset) ? Math.min(offset,100) : 0
+        def accountID= _handleAccountId(params.accountId)
+        def account = Account.get(accountID)
+        if(account){
+            def mesg = Message.where { account.id == accountID }.listOrderByDateCreated(max:limit, offset:os)
+            if(mesg) {
+                def resp=[]
+                mesg.each(){
+                    resp.add( _formatMessage(it) )
+                }
+                respond resp
+            } else {
+                 _respondError(404,"No messages found")
+            }
+        }
     }
 
     @Override
@@ -58,6 +78,17 @@ class MessageController extends RestfulController<Message> {
         new Message(p)
     }
 
+    private _formatMessage(mesg){
+        if(mesg){
+            def resp=[:]
+            def cd=_formatDate(mesg.dateCreated)
+            resp.put('id',mesg.id)
+            resp.put('text',mesg.text)
+            resp.put('dateCreated',cd)
+            return resp
+        } else _respondError(404,"No account found")
+    }
+
     private _handleAccountId(accountID){
         def isNum = (accountID as String).isNumber()
         if(!isNum){
@@ -71,30 +102,12 @@ class MessageController extends RestfulController<Message> {
         }
     }
 
-    /**
-     * Requirement
-     * @return
-     */
-
-    def lastTenMessages(){
-
-        def accountID=params.accountId
-        def account=Account.get(accountID)
-
-        if(params.accountId){
-
-            def mesgArr = Message.where { account.id == accountID }.findAll()
-            def mesg = Message.where { account.id == accountID }.list(max: 10, offset: 10)
-            if(mesg) {
-                render mesg.text as String
-            }
-
-            else{
-                _respondError(404,"No messages found")
-            }
-        }
+    private _formatDate(undate){
+        def ep=Calendar.getInstance(TimeZone.getTimeZone('CST'))
+        def dt=undate as Long
+        ep.setTimeInMillis(dt)
+        return ep.format("MM/dd/yyyy HH:mm:ss zzz")
     }
-
 
     private _respondError(code,mesg){
         response.status=code

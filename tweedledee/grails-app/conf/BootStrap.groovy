@@ -12,9 +12,8 @@ class BootStrap {
         new Message(test:'adfasd lk fkasdjsslkfajlj jfdafa ',account:3).save()
         new Message(test:'ad aadfdf',account:2).save()
         new Message(test:'oiewnnoidf ',account:3).save()
-        new Message(test:' asdf  asdd!!!',account:4).save()
-        
+        new Message(test:' asdf  asdd!!!',account:4).save()   
     }
-    def destroy = {
-    }
+    //def destroy = {
+    //}
 }
