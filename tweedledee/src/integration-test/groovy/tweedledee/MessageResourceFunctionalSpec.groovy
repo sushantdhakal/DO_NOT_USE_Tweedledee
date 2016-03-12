@@ -134,24 +134,50 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     }
 
-   /* def 'get last ten messages'(){
+    /**
+     * Test 2.2
+     * Requirement: M3
+     * Desc: This method will get the most recent messages with the default max value of 10.
+     * The test will create 20 messages upfront, but according by default, should only get 10.
+     */
+
+    def 'get last messages'(){
         given:
-        def mesg = [text:'This is a new message for you']
-        def json = mesg as JSON
+        def mesg = "This is message number: " as String
+        (1..20).each {
+            restClient.post(path: "/account/${accountId}/messages", body: [text:mesg + it], contentType: 'application/json')
+        }
 
-        when:
-        def resp = restClient.post( path: "/account/${accountId}/messages", body: json as String, requestContentType: 'application/json' )
+        when: 'This will get the recent messages with the default value of 10'
+        def resp = restClient.get( path: "/message/${accountId}/messages")
 
         then:
-        resp.status == 201
+        resp.status == 200
         resp.data
+        resp.data.size() == 10
+    }
+
+    /**
+     * Test 2.2
+     * Requirement: M4
+     * Desc: Support of offset parameter 
+     */
+
+    def 'offset parameter support'(){
+        given:
+        def mesg = "This is message number: " as String
+        (1..20).each {
+            restClient.post(path: "/account/${accountId}/messages", body: [text:mesg + it], contentType: 'application/json')
+        }
 
         when:
-        def resp1 = restClient.get( path: "/message/${accountId}/messages")
+        def resp = restClient.get( path: "/message/${accountId}/messages",query: [max: 7, offset: 2])
 
         then:
-        resp1.status == 201
-    }*/
+        resp.status == 200
+        resp.data
+        resp.data.size()==7
+    }
 
     /**
      * Test 2.2
