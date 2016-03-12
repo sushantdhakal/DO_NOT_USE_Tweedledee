@@ -47,17 +47,47 @@ class AccountController extends RestfulController<Account> {
 
     def showFollowers(final Integer max,final Integer offset){
         
-        _fetchFollow(max,offset,"followers")
+        _fetchFollow(params,max,offset,"followers")
 
     }
 
     def showFollowing(final Integer max,final Integer offset){
 
-         _fetchFollow(max,offset,"following")
+         _fetchFollow(params,max,offset,"following")
 
     }
 
-    private _fetchFollow(max,offset,galf){
+    def showFeed(final Integer max,final Integer offset){
+        def limit=Math.min(max?:10,100)
+        def os=(offset) ? Math.min(offset,100) : 0
+        def accountID=_handleAccountId(params.accountId)
+        if(accountID){
+            def acct=Account.get(accountID)
+            def ff=Account.where { id in acct.followers.id }.list()
+            if(ff) {
+                def allMesgs=[]
+                ff.each(){
+                    def followerAccount=it
+                    def m = Message.createCriteria()
+                    def mesgForFollower = m.list {
+                        eq("account",followerAccount)
+                        maxResults(limit)
+                    }
+                    if(mesgForFollower) allMesgs.add(mesgForFollower)
+                    //messagesForFollower.each(){
+                    //    def formattedMessage=_formatMessage(it)
+                    //    mm.add(formattedMessage)
+                    //}
+                }
+                respond allMesgs
+            }
+            else _respondError(404,"No followers found")
+        }
+        else _respondError(404,"No account found")
+
+    }
+
+    private _fetchFollow(params,max,offset,galf){
         
         def aa=false
         def limit=Math.min(max?:10,100)
@@ -114,6 +144,17 @@ class AccountController extends RestfulController<Account> {
         } else _respondError(404,"No account found")
     }
     
+    private _formatMessage(mesg){
+        if(mesg){
+            def resp=[:]
+            def cd=_formatDate(mesg.dateCreated)
+            resp.put('id',mesg.id)
+            resp.put('text',mesg.text)
+            resp.put('dateCreated',cd)
+            return resp
+        } else _respondError(404,"No account found")
+    }
+
     private _respondError(code,mesg){
         response.status=code
         respond error:code,message:"$mesg"
