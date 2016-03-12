@@ -20,6 +20,7 @@ class UrlMappings {
         "/accounts"(controller:'account',action:'list')
         "/accounts/$id"(controller:'account',action:'show')
         "/message/${accountId}/messages"(controller:'message',action:'lastTenMessages')
+        "/messages/search"(controller:'message',action:'searchMessages')
     } 
 }
 
