@@ -37,7 +37,7 @@ class MessageController extends RestfulController<Message> {
         def accountID= _handleAccountId(params.accountId)
         def account = Account.get(accountID)
         if(account){
-            def mesg = Message.where { account.id == accountID }.listOrderByDateCreated(max:limit, offset:os)
+            def mesg = Message.where { account.id == accountID }.list(max:limit, offset:os)
             if(mesg) {
                 def resp=[]
                 mesg.each(){
@@ -47,7 +47,7 @@ class MessageController extends RestfulController<Message> {
             } else {
                  _respondError(404,"No messages found")
             }
-        }
+        } else _respondError(404,"No account found")
     }
 
     @Override
