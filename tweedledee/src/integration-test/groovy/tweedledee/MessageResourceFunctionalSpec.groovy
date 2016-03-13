@@ -185,7 +185,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
         def messageToSearch = "This is message number: " as String
 
         when:
-        def resp = restClient.post(path: "/messages/search", body: [searchText:messageToSearch], contentType: 'application/json')
+        def resp = restClient.post(path: "/messages/search", body: [searchTerm:messageToSearch], contentType: 'application/json')
 
         then:
         resp.status == 200

@@ -43,17 +43,14 @@ class MessageController extends RestfulController<Message> {
         } else _respondError(404,"No account found")
     }
 
-    def searchMessages(final Integer max){
-        def searchText=request.JSON.searchText
-        def limit = Math.min(max?:10,100)
-        if(searchText){
-            def m = Message.createCriteria()
-            def res = m.list(max:limit) {
-                like("text", "%${searchText}%")
-            }
-            if(res) respond res
-            else _respondError(404,"No messages found for search '$searchText'")
-        } else _respondError(422,"No search criteria")
+    def searchMessages(){
+        def searchTerm=request.JSON.searchTerm
+        def res = Message.where {
+            text==~"%$searchTerm%" }.list().collect{
+            res->return [message:res, handle:Account.get(res.account.id).handle]
+        }
+        if(res) respond res
+        else _respondError(404,"No messages found for search '$searchTerm'")
     }
 
     @Override
