@@ -9,6 +9,11 @@ import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
+/**
+ * Account: Functional Test 1
+ * Desc: Testing account resource fetch and CRUD operations
+ */
+
 @Unroll
 @Integration
 @Stepwise
@@ -19,16 +24,16 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
   @Shared
   def accountHandle
-  
+
   @Shared
   def messageId
-  
+
   def validAccountData
 
   RESTClient restClient
 
   def setup() {
-    
+
     restClient = new RESTClient(baseUrl)
 
     validAccountData = [ handle:'Hulk77', name:'Hulk Hogan', email:'thehulkster@hulkomania.me', password:'12345678aA' ]
@@ -153,9 +158,9 @@ class MessageResourceFunctionalSpec extends GebSpec {
     }
 
     /**
-     * Test 2.2
+     * Test 2.3
      * Requirement: M4
-     * Desc: Support of offset parameter 
+     * Desc: Support of offset parameter
      */
 
     def 'offset parameter support'(){
@@ -175,7 +180,29 @@ class MessageResourceFunctionalSpec extends GebSpec {
     }
 
     /**
-     * Test 2.2
+     * Test 2.3
+     * Requirement: M5
+     * Desc: This test will search for search for messages containing a specified search term
+     */
+
+    def 'search message'(){
+        given:
+        def messageToSearch = "This is message number: " as String
+
+        when:
+        def resp = restClient.post(path: "/messages/search", body: [searchText:messageToSearch], contentType: 'application/json')
+
+        then:
+        resp.status == 200
+        resp.data
+    }
+
+    /**
+     * TODO sxd Put error conditions as well
+     */
+
+    /**
+     * Test 2.4
      * Requirement: M2
      * Desc: Saved message can be updated
      */
@@ -190,7 +217,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
         then:
         resp.status == 200
-        
+
         when:
         resp = restClient.get(path: "/account/${accountId}/message/${messageId}")
 
@@ -200,7 +227,7 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
     }
     /**
-     * Test 2.3
+     * Test 2.5
      * Requirement: M1
      * Desc: Delete a message resource
      */
