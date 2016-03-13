@@ -10,6 +10,45 @@ class AccountController extends RestfulController<Account> {
         super(Account)
     }
 
+    def initMe(){
+        def rr=[]
+        Message.executeUpdate("delete Message where id=id")
+        Account.executeUpdate("delete Account where id=id")
+        (1..5).each {
+            def ct1=it
+            def pp=[handle:"hulk_${ct1}",name:'Hulk Hogan',email:"hulk${ct1}@iam.me",password:'12345678aA']
+            def account = new Account( pp )
+            account.save()
+            if(account.handle){
+                def ah=account.handle
+                (1..25).each {
+                    def ct2=it
+                    def mm= [text:"This is a new message ${ct2} for ${ah}",account:account]
+                    def mesg = new Message(mm)
+                    mesg.save()
+                    if(!mesg.id) rr.add(failed:"Message loop ${ct2} for ${ah} failed to post")
+                } 
+            } else rr.add(failed:"Account loop ${ct1} failed to post")
+        }
+        def ss=Account.list()
+        if(ss){
+            def nn=ss.id
+            nn.each(){
+                def tt=it
+                ss.each(){
+                    if(it.id!=tt){
+                        def v=Account.get(tt)
+                        if(v) it.addToFollowers(v)
+                        it.save()
+                        v.addToFollowing(it)
+                        v.save()
+                    }
+                }
+            }
+        }
+        respond ss
+    }
+
     @Override
     def index(final Integer max) {
         params.max = Math.min(max?:10,100)
