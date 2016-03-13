@@ -28,7 +28,7 @@ class MessageController extends RestfulController<Message> {
         def id=params.id
         def accountID = _handleAccountId(params.accountId)
         def mesg=Message.where { id == id && account.id == accountID }.find()
-        respond _formatMessage(mesg)
+        respond mesg
     }
 
     def lastTenMessages(final Integer max,final Integer offset){
@@ -37,16 +37,9 @@ class MessageController extends RestfulController<Message> {
         def accountID= _handleAccountId(params.accountId)
         def account = Account.get(accountID)
         if(account){
-            def mesg = Message.where { account.id == accountID }.list(max:limit, offset:os)
-            if(mesg) {
-                def resp=[]
-                mesg.each(){
-                    resp.add( _formatMessage(it) )
-                }
-                respond resp
-            } else {
-                 _respondError(404,"No messages found")
-            }
+            def mesg = Message.where { account.id == accountID }.list(max:limit,offset:os)
+            if(mesg) respond mesg
+            else _respondError(404,"No messages found")
         } else _respondError(404,"No account found")
     }
 
@@ -91,17 +84,6 @@ class MessageController extends RestfulController<Message> {
         new Message(p)
     }
 
-    private _formatMessage(mesg){
-        if(mesg){
-            def resp=[:]
-            def cd=_formatDate(mesg.dateCreated)
-            resp.put('id',mesg.id)
-            resp.put('text',mesg.text)
-            resp.put('dateCreated',cd)
-            return resp
-        } else _respondError(404,"No account found")
-    }
-
     private _handleAccountId(accountID){
         def isNum = (accountID as String).isNumber()
         if(!isNum){
@@ -113,13 +95,6 @@ class MessageController extends RestfulController<Message> {
         }else {
             _respondError(422,"No account")
         }
-    }
-
-    private _formatDate(undate){
-        def ep=Calendar.getInstance(TimeZone.getTimeZone('CST'))
-        def dt=undate as Long
-        ep.setTimeInMillis(dt)
-        return ep.format("MM/dd/yyyy HH:mm:ss zzz")
     }
 
     private _respondError(code,mesg){

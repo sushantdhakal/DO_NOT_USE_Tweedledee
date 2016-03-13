@@ -1,5 +1,6 @@
 package tweedledee
 
+import groovy.time.TimeCategory
 import grails.rest.RestfulController
 
 class AccountController extends RestfulController<Account> {
@@ -10,6 +11,7 @@ class AccountController extends RestfulController<Account> {
         super(Account)
     }
 
+    // This method is for setting up data only!
     def initMe(){
         def rr=[]
         Message.executeUpdate("delete Message where id=id")
@@ -26,6 +28,15 @@ class AccountController extends RestfulController<Account> {
                     def mm= [text:"This is a new message ${ct2} for ${ah}",account:account]
                     def mesg = new Message(mm)
                     mesg.save()
+                    if(mesg.dateCreated){
+                        def ddd=mesg.dateCreated
+                        use(TimeCategory){
+                            def rx=new java.util.Random()
+                            def nx=rx.nextInt(52)
+                            mesg.dateCreated=ddd-nx.week+2.hours
+                        }
+                        mesg.save()
+                    }
                     if(!mesg.id) rr.add(failed:"Message loop ${ct2} for ${ah} failed to post")
                 } 
             } else rr.add(failed:"Account loop ${ct1} failed to post")
@@ -77,7 +88,9 @@ class AccountController extends RestfulController<Account> {
                 def thisAccount=Account.get(accountID)
                 if(thisAccount){
                     followerAcct.followers.add(thisAccount)
+                    followerAcct.save()
                     thisAccount.following.add(followerAcct)
+                    thisAccount.save()
                     _showAccountWithCounts(thisAccount)
                 }
             } else _respondError(404,"No account found for follower") 
@@ -99,30 +112,24 @@ class AccountController extends RestfulController<Account> {
     def showFeed(final Integer max,final Integer offset){
         def limit=Math.min(max?:10,100)
         def os=(offset) ? Math.min(offset,100) : 0
+        def dt=(params.date) ? Date.parse("MM/dd/yyyy",params.date) : _formatDate(0,true)
         def accountID=_handleAccountId(params.accountId)
         if(accountID){
             def acct=Account.get(accountID)
-            def ff=Account.where { id in acct.followers.id }.list()
-            if(ff) {
-                def allMesgs=[]
-                ff.each(){
-                    def followerAccount=it
-                    def m = Message.createCriteria()
-                    def mesgForFollower = m.list {
-                        eq("account",followerAccount)
-                        maxResults(limit)
-                    }
-                    if(mesgForFollower) allMesgs.add(mesgForFollower)
-                    //messagesForFollower.each(){
-                    //    def formattedMessage=_formatMessage(it)
-                    //    mm.add(formattedMessage)
-                    //}
-                }
-                respond allMesgs
-            }
-            else _respondError(404,"No followers found")
-        }
-        else _respondError(404,"No account found")
+            if(acct){
+                def ff=Account.where { id in acct.followers.id }.list()
+                if(ff) {
+                    def yy=ff.id.join(",")
+                    def q="select m.text,m.dateCreated,m.account.handle as account from Message m " +
+                    "where m.dateCreated >= ? "+
+                    "and m.account.id in (select a.id from Account a where a.id in ($yy)) "+
+                    "order by dateCreated desc"
+                    def allMesgs=Message.executeQuery(q,[dt],[max:limit])
+                    respond count:allMesgs.size(),messages:allMesgs,date:dt.toString()
+                } else _respondError(404,"No followers found")
+                
+            } else _respondError(422,"No invalid account")
+        } else _respondError(404,"No account")
 
     }
 
@@ -137,8 +144,9 @@ class AccountController extends RestfulController<Account> {
             if(galf=='followers') aa=Account.where { id in acct.followers.id }.list([max:limit,offset:os])
             else aa=Account.where { id in acct.following.id }.list([max:limit,offset:os])
             def ff=[]
-            aa.each(){ ff.add(name:it.name,handle:it.handle,email:it.email) }
-            respond "$galf":ff
+            aa.each(){ ff.add(id:it.id,name:it.name,handle:it.handle,email:it.email) }
+            def kk=(galf=='followers') ? "followerCount" : "followingCount"
+            respond "$galf":ff,"$kk":ff.size()
         } else _respondError(404,"No account found")
     
     }
@@ -186,12 +194,19 @@ class AccountController extends RestfulController<Account> {
     private _formatMessage(mesg){
         if(mesg){
             def resp=[:]
-            def cd=_formatDate(mesg.dateCreated)
+            def cd=new java.text.SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(mesg.dateCreated)
             resp.put('id',mesg.id)
             resp.put('text',mesg.text)
             resp.put('dateCreated',cd)
+            resp.put('account',mesg.account.handle)
             return resp
         } else _respondError(404,"No account found")
+    }
+
+    private _formatDate(undate,shortDate=false){
+        def ep=Calendar.getInstance(TimeZone.getTimeZone('CST'))
+        ep.setTimeInMillis(undate as Long)
+        return (shortDate) ? ep.getTime() : ep.format("MM/dd/yyyy HH:mm:ss zzz")
     }
 
     private _respondError(code,mesg){
