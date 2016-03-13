@@ -9,11 +9,6 @@ import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.Unroll
 
-/**
- * Account: Functional Test 1
- * Desc: Testing account resource fetch and CRUD operations
- */
-
 @Unroll
 @Integration
 @Stepwise
