@@ -11,44 +11,80 @@ class MessageController extends RestfulController<Message> {
         super(Message)
     }
 
-    def index() {
-        def accountID=params.accountId
-        def mesg=Message.where { account.id == accountID }.findAll()
-        if(mesg==[]){
-            respond status:"NOT_FOUND",message:"No messages found for this account."
-            return
+    @Override
+    def index(final Integer max) {
+        if(params.accountId){
+            params.max = Math.min(max?:10,100)
+            def accountID = _handleAccountId(params.accountId)
+            def mesg=Message.where { account.id == accountID }.list(params)
+            respond mesg
         }
-        respond mesg,[status:OK]
+        _respondError(422,"No account")
     }
 
-    def show(Message message) {
-        //def accountID = params.accountId
-        //Message.where { account.id == accountID }.find()
-        respond status:"show"
+    @Override
+    def show(){
+        def id=params.id
+        def accountID = _handleAccountId(params.accountId)
+        def mesg=Message.where { id == id && account.id == accountID }.find()
+        respond mesg
+    }
+
+    def lastTenMessages(final Integer max,final Integer offset){
+        def limit = Math.min(max?:10,100)
+        def os = (offset) ? Math.min(offset,100) : 0
+        def accountID= _handleAccountId(params.accountId)
+        def account = Account.get(accountID)
+        if(account){
+            def mesg = Message.where { account.id == accountID }.list(max:limit,offset:os)
+            respond mesg
+        } else _respondError(404,"No account found")
+    }
+
+    def searchMessages(){
+        def searchTerm=request.JSON.searchTerm
+        def res = Message.where {
+            text==~"%$searchTerm%" }.list().collect{
+            res->return [message:res, handle:Account.get(res.account.id).handle]
+        }
+        respond res
+    }
+
+    @Override
+    def create(){
+        _respondError(404,"Not found")
     }
 
     @Override
     protected Message queryForResource(Serializable id) {
-        def accountID = params.accountId
+        def accountID = _handleAccountId(params.accountId)
         Message.where { id == id && account.id == accountID }.find()
     }
 
     @Override
     protected Message createResource() {
-        def t=request.JSON.text
-        if(!t||t.size()>40){
-            respond status:"ERROR",message:"The message must have between 1 and 40 characters to be valid."
-            return
-        }
-        def a=params.accountId
-        def b=Account.get(a)
-        if(!a||!b){
-            respond status:"ERROR",message:"The message must be associated to a valid account."
-            return
-        }
-        def p=[text:t,account:[id:a]]
+        def text=request.JSON.text
+        def accountID = _handleAccountId(params.accountId)
+        def account=Account.get(accountID)
+        def p=[text:text,account:[id:accountID]]
         new Message(p)
     }
-    
 
+    private _handleAccountId(accountID){
+        def isNum = (accountID as String).isNumber()
+        if(!isNum){
+            def acct=Account.findByHandle(accountID)
+            if(acct) return acct.id
+            else _respondError(422,"Invalid account")
+        }else if(accountID){
+            return accountID
+        }else {
+            _respondError(422,"No account")
+        }
+    }
+
+    private _respondError(code,mesg){
+        response.status=code
+        respond error:code,message:"$mesg"
+    }
 }

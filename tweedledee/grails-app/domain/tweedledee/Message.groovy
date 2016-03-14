@@ -2,10 +2,10 @@ package tweedledee
 
 class Message {
     String text
-    String dateCreated
+    Date dateCreated
     static belongsTo = [ account : Account ]
     static mapping = {
-        sort dateCreated:'asc'
+        sort dateCreated:'desc'
     }
     static constraints = {
         text nullable:false,size: 1..40

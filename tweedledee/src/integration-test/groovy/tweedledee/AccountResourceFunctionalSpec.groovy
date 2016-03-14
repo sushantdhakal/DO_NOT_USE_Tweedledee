@@ -21,6 +21,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
   @Shared
   def accountId
+  def accountHandle
   
   def validAccountData
   def accountResource
@@ -28,28 +29,10 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
   def setup() {
     
-    accountResource = '/accounts'
-
     restClient = new RESTClient(baseUrl)
 
     validAccountData = [ handle:'Hulk77', name:'Hulk Hogan', email:'thehulkster@hulkomania.me', password:'12345678aA' ]
     
-  }
-
-  /**
-   * Test 1.0
-   * Requirement: A1
-   * Desc: Gets an account resource
-   */
-  def 'get all account resources'() {
-
-    when:
-    def resp = restClient.get( path: "${accountResource}" )
-
-    then:
-    resp.status == 200
-    resp.data.size() == 0
-
   }
 
   /**
@@ -64,7 +47,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
     def json = acount as JSON
 
     when:
-    def resp = restClient.post( path: "${accountResource}", body: json as String, requestContentType: 'application/json' )
+    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
 
     then:
     resp.status == 201
@@ -72,6 +55,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
     when:
     accountId = resp.data.id
+    accountHandle = resp.data.handle
 
     then:
     accountId
@@ -82,14 +66,76 @@ class AccountResourceFunctionalSpec extends GebSpec {
   }
 
   /**
+   * Test 1.1.2
+   * Requirement: A1
+   * Desc: Fails to create a new account with same handle
+   */
+  def 'fails ot create a new acount when using duplicate handle'() {
+    
+    given:
+    def p = validAccountData
+    p.email='somethinelse@s.com'
+    def acount = new Account( p )
+    def json = acount as JSON
+
+    when:
+    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+
+    then:
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode == 422
+
+  }
+
+  /**
+   * Test 1.1.3
+   * Requirement: A1
+   * Desc: Fails to create a new account with same email
+   */
+  def 'fails ot create a new acount when using duplicate email'() {
+    
+    given:
+    def p = validAccountData
+    p.handle='SomethingElse'
+    def acount = new Account( p )
+    def json = acount as JSON
+
+    when:
+    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+
+    then:
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode == 422
+    
+  }
+
+  /**
+   * Test 1.0
+   * Requirement: A1
+   * Desc: Gets an account resource
+   *
+   */
+
+  def 'get all account resources'() {
+
+    when:
+    def resp = restClient.get(path: "/accounts")
+
+    then:
+    resp.status == 200
+    resp.data.size() == 1
+
+  }
+
+  /**
    * Test 1.2
    * Requirement: A1
-   * Desc: Retrieves a saved account resource
+   * Desc: Retrieves a saved account resource by id
    */
-  def 'gets a new account'() {
+  def 'gets a new account by id'() {
     
     when:
-    def resp = restClient.get(path: "${accountResource}/${accountId}")
+    def resp = restClient.get(path: "/account/${accountId}")
 
     then:
     resp.status == 200
@@ -97,8 +143,24 @@ class AccountResourceFunctionalSpec extends GebSpec {
     resp.data.handle == validAccountData.handle
     resp.data.name == validAccountData.name
     resp.data.email == validAccountData.email
-    resp.data.password == validAccountData.password
+  }
 
+  /**
+   * Test 1.2.1
+   * Requirement: A1
+   * Desc: Retrieves a saved account resource by handle
+   */
+  def 'gets a new account by handle'() {
+    
+    when:
+    def resp = restClient.get(path: "/account",query:[handle:validAccountData.handle] )
+    
+    then:
+    resp.status == 200
+    resp.data.id == accountId
+    resp.data.handle == validAccountData.handle
+    resp.data.name == validAccountData.name
+    resp.data.email == validAccountData.email
   }
 
   /**
@@ -115,13 +177,13 @@ class AccountResourceFunctionalSpec extends GebSpec {
     def json = account as JSON
 
     when:
-    def resp = restClient.put(path: "${accountResource}/${accountId}", body: json as String, requestContentType: 'application/json')
+    def resp = restClient.put(path: "/account/${accountId}", body: json as String, requestContentType: 'application/json')
 
     then:
     resp.status == 200
 
     when:
-    resp = restClient.get(path: "${accountResource}/${accountId}")
+    resp = restClient.get(path: "/account/${accountId}")
 
     then:
     resp.status == 200
@@ -135,26 +197,21 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Delete an account resource
    */
   def 'deletes an account'() {
-    
+    given:
+    def resp1 = restClient.get(path: "/accounts")
+
     when:
-    def resp = restClient.delete(path: "${accountResource}/${accountId}")
+    def resp = restClient.delete(path: "/account/${accountId}")
 
     then:
     resp.status == 204
 
     when:
-    restClient.get(path: "${accountResource}/${accountId}")
+    restClient.get(path: "/account/${accountId}")
 
     then:
-    thrown(HttpResponseException)
-
-    when:
-    resp = restClient.get(path: "${accountResource}")
-
-    then:
-    resp.status == 200
-    resp.data.size() == 0
-
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode == 404
   }
 
   /**
@@ -170,17 +227,18 @@ class AccountResourceFunctionalSpec extends GebSpec {
     def json = account as JSON
 
     when:
-    def resp = restClient.post( path: "${accountResource}", body: json as String, requestContentType: 'application/json' )
+    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
 
     then:
-    thrown(HttpResponseException)
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode == 422
 
     when:
-    resp = restClient.get(path: "${accountResource}")
+    resp = restClient.get(path: "/account")
 
     then:
-    resp.status == 200
-    resp.data.size() == 0
+    HttpResponseException err1 = thrown(HttpResponseException)
+    err1.statusCode == 422
 
     where:
     desc                  |  testHandle       |  testName |  testEmail    |  testPassword
@@ -204,17 +262,18 @@ class AccountResourceFunctionalSpec extends GebSpec {
       def json = account as JSON
 
       when:
-      def resp = restClient.post( path: "${accountResource}", body: json as String, requestContentType: 'application/json' )
+      def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
 
       then:
-      thrown(HttpResponseException)
+      HttpResponseException err = thrown(HttpResponseException)
+      err.statusCode == 422
 
       when:
-      resp = restClient.get(path: "${accountResource}")
+      resp = restClient.get(path: "/account")
 
       then:
-      resp.status == 200
-      resp.data.size() == 0
+      HttpResponseException err1 = thrown(HttpResponseException)
+      err1.statusCode == 422
 
       where:
       desc                      |  testPassword
@@ -222,8 +281,5 @@ class AccountResourceFunctionalSpec extends GebSpec {
       "over than 16 chars"      |  "1"*20
       "no upper case chars"     |  "2a"*4
       "no lower case chars"     |  "1A"*4
-
-
     }
-
 }
