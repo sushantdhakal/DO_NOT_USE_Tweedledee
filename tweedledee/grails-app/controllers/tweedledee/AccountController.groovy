@@ -193,6 +193,8 @@ class AccountController extends RestfulController<Account> {
             resp.put('messageCount',acct.messages.size())
             resp.put('followerCount',acct.followers.size())
             resp.put('followingCount',acct.following.size())
+            resp.put('following', acct.following)
+            resp.put('followers', acct.followers)
             respond resp
         } else _respondError(404,"No account found")
     }
