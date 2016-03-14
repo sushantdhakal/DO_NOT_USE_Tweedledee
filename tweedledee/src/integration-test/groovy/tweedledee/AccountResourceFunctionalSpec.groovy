@@ -139,12 +139,10 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
     then:
     resp.status == 200
-    //resp.data.id == accountId
+    resp.data.id == accountId
     resp.data.handle == validAccountData.handle
     resp.data.name == validAccountData.name
     resp.data.email == validAccountData.email
-    resp.data.password == validAccountData.password
-
   }
 
   /**
@@ -159,12 +157,10 @@ class AccountResourceFunctionalSpec extends GebSpec {
     
     then:
     resp.status == 200
- //   resp.data.id == accountId
+    resp.data.id == accountId
     resp.data.handle == validAccountData.handle
     resp.data.name == validAccountData.name
     resp.data.email == validAccountData.email
-    resp.data.password == validAccountData.password
-
   }
 
   /**
@@ -216,7 +212,6 @@ class AccountResourceFunctionalSpec extends GebSpec {
     then:
     HttpResponseException err = thrown(HttpResponseException)
     err.statusCode == 404
-    //resp2.data.size() == resp1.data.size()-1
   }
 
   /**
@@ -243,8 +238,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
     then:
     HttpResponseException err1 = thrown(HttpResponseException)
-    err1.statusCode == 404
-  //  resp.data.size() == 0
+    err1.statusCode == 422
 
     where:
     desc                  |  testHandle       |  testName |  testEmail    |  testPassword
@@ -279,9 +273,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
 
       then:
       HttpResponseException err1 = thrown(HttpResponseException)
-      err1.statusCode == 404
-    //  resp.status == 200
-    //  resp.data.size() == 0
+      err1.statusCode == 422
 
       where:
       desc                      |  testPassword
@@ -289,8 +281,5 @@ class AccountResourceFunctionalSpec extends GebSpec {
       "over than 16 chars"      |  "1"*20
       "no upper case chars"     |  "2a"*4
       "no lower case chars"     |  "1A"*4
-
-
     }
-
 }

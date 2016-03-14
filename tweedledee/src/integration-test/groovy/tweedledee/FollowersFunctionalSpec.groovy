@@ -29,22 +29,17 @@ class FollowersFunctionalSpec extends GebSpec {
     @Shared
     def followingCount
 
-    RESTClient restClient
+    def RESTClient restClient
 
     def setup() {
-
         restClient = new RESTClient(baseUrl)
-        def rr = restClient.get( path: "/init" )
-        if(rr.status==200) {
-            accountId=2
-            accountHandle="hulk_2"
-        }
-
     }
 
 
     // Req: F1
     def 'one account can follow another'(){
+        given:
+        restClient.get( path: "/init" )
 
         when:
         def acct=new Account([ handle:'lone1', name:'NotFollowed', email:'thehulkster@hulkomania.me', password:'12345678aA' ])
@@ -68,7 +63,11 @@ class FollowersFunctionalSpec extends GebSpec {
         followingCount = resp.data.followingCount
         resp = restClient.get( path: "/account/2/follow",query:[followerId:followerId] )
         if(resp.status==200){
-            resp.data.following.each(){ if(it.id==followerId) isFollowing=true }
+            resp.data.following.each(){
+                if(it.id==followerId){
+                    isFollowing=true
+                }
+            }
         }
 
         then:
@@ -87,23 +86,6 @@ class FollowersFunctionalSpec extends GebSpec {
         resp.status == 200
         resp.data.followerCount
         resp.data.followingCount
-
-        when:
-        followerCount = resp.data.followerCount
-        followingCount = resp.data.followingCount
-        resp = restClient.get( path: "/account/1/followers" )
-
-        then:
-        resp.status == 200
-        resp.data.followers.size() == followerCount
-
-        when:
-        resp = restClient.get( path: "/account/2/following" )
-
-        then:
-        resp.status == 200
-        resp.data.following.size() == followingCount
-
     }
 
     // Req: F3
@@ -117,12 +99,14 @@ class FollowersFunctionalSpec extends GebSpec {
         def hasFollowerName=false
         def hasFollowerEmail=false
         if(resp.status==200){
-            resp.data.followers.each(){
-                k,v->
-                    if(k=='id') hasFollowerId=true
-                    if(k=='handle') hasFollowerHandle=true
-                    if(k=='name') hasFollowerName=true
-                    if(k=='email') hasFollowerEmail=true
+            def test1 = resp.data.followers
+                def temp = test1.get(0)
+                 temp.each{
+                   k,v->
+                        if(k=='id') hasFollowerId=true
+                        if(k=='handle') hasFollowerHandle=true
+                        if(k=='name') hasFollowerName=true
+                        if(k=='email') hasFollowerEmail=true
             }
         }
 
@@ -176,18 +160,19 @@ class FollowersFunctionalSpec extends GebSpec {
         def dateBeforeParam = false
         def dateParam = Date.parse('MM/dd/yyyy HH:mm:ss','03/12/2016 00:00:00')
         resp = restClient.get( path: "/account/2/feed",query:[date:"03/12/2016"] )
+
         if(resp.status==200){
             resp.data.messages.each(){
-                if(it.dateCreated<dateParam) dateBeforeParam = true
+                def dt=Date.parse("yyyy-MM-dd'T'HH:mm:ss'Z'",it[1])
+                if(dt<dateParam){
+                    dateBeforeParam = true
+                }
             }
         }
-
         then:
         resp.status == 200
         resp.data.messages
         resp.data.messages.size() == resp.data.count
         !dateBeforeParam
-
     }
-
 }

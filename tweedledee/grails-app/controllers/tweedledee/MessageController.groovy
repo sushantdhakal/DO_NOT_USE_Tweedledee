@@ -17,8 +17,7 @@ class MessageController extends RestfulController<Message> {
             params.max = Math.min(max?:10,100)
             def accountID = _handleAccountId(params.accountId)
             def mesg=Message.where { account.id == accountID }.list(params)
-            if(mesg) respond mesg
-            else _respondError(404,"No messages found")
+            respond mesg
         }
         _respondError(422,"No account")
     }
@@ -38,8 +37,7 @@ class MessageController extends RestfulController<Message> {
         def account = Account.get(accountID)
         if(account){
             def mesg = Message.where { account.id == accountID }.list(max:limit,offset:os)
-            if(mesg) respond mesg
-            else _respondError(404,"No messages found")
+            respond mesg
         } else _respondError(404,"No account found")
     }
 
@@ -49,8 +47,7 @@ class MessageController extends RestfulController<Message> {
             text==~"%$searchTerm%" }.list().collect{
             res->return [message:res, handle:Account.get(res.account.id).handle]
         }
-        if(res) respond res
-        else _respondError(404,"No messages found for search '$searchTerm'")
+        respond res
     }
 
     @Override
@@ -67,16 +64,8 @@ class MessageController extends RestfulController<Message> {
     @Override
     protected Message createResource() {
         def text=request.JSON.text
-        if(!text||text.size()>40){
-            _respondError(422,"The message must have between 1 and 40 characters to be valid.")
-            return
-        }
         def accountID = _handleAccountId(params.accountId)
         def account=Account.get(accountID)
-        if(!accountID||!account){
-            _respondError(422,"The message must be associated to a valid account.")
-            return
-        }
         def p=[text:text,account:[id:accountID]]
         new Message(p)
     }

@@ -56,22 +56,6 @@ class MessageResourceFunctionalSpec extends GebSpec {
     }
 
   /**
-   * Test 1
-   * Requirement: M2
-   * Desc: Returns an error when no messages found for an account
-   */
-  def 'returns error when no messages found for an account'() {
-
-    when:
-    def resp = restClient.get( path: "/account/${accountId}/messages" )
-
-    then:
-    HttpResponseException err = thrown(HttpResponseException)
-    err.statusCode == 404
-
-  }
-
-  /**
    * Test 2
    * Requirement: M2
    * Desc: Creates a message resource
@@ -96,6 +80,48 @@ class MessageResourceFunctionalSpec extends GebSpec {
     messageId
     resp.data.text == 'This is a new message for you'
   }
+
+    /**
+     * Assignment 2
+     * Requirement: M2
+     * Create a test for if a message cannot be created (if the message text is invalid)
+     *
+     */
+
+    def 'Return error message creation with an invalid message'() {
+
+        given:
+        def mesg = [text:'This is a new message for you (123456789012345667889909889848484889997443223399999900)']
+        def json = mesg as JSON
+
+        when:
+        def resp = restClient.post( path: "/account/${accountId}/messages", body: json as String, requestContentType: 'application/json' )
+
+        then:
+        HttpResponseException err = thrown(HttpResponseException)
+        err.statusCode == 422
+    }
+
+    /**
+     * Assignment 2
+     * Requirement: M2
+     * Create a test for if a message cannot be created (if the account is invalid)
+     *
+     */
+
+    def 'Return error message creation with an invalid account'() {
+
+        given:
+        def mesg = [text:'This is a new message for you']
+        def json = mesg as JSON
+
+        when:
+        def resp = restClient.post( path: "/account/abcXYZ/messages", body: json as String, requestContentType: 'application/json' )
+
+        then:
+        HttpResponseException err = thrown(HttpResponseException)
+        err.statusCode == 422
+    }
 
     /**
      * Test 2.1
@@ -166,12 +192,21 @@ class MessageResourceFunctionalSpec extends GebSpec {
         }
 
         when:
-        def resp = restClient.get( path: "/message/${accountId}/messages",query: [max: 7, offset: 2])
+        def resp = restClient.get( path: "/message/${accountId}/messages",query: [max: 7])
 
         then:
         resp.status == 200
         resp.data
         resp.data.size()==7
+
+
+        when:
+        def messageId = resp.data[1].id
+        def resp2 = restClient.get( path: "/message/${accountId}/messages",query:[offset:1] )
+
+        then:
+        resp2.status == 200
+        resp2.data[0].id == messageId
     }
 
     /**
@@ -189,12 +224,9 @@ class MessageResourceFunctionalSpec extends GebSpec {
 
         then:
         resp.status == 200
-        resp.data
+        resp.data.message
+        resp.data.handle
     }
-
-    /**
-     * TODO sxd Put error conditions as well
-     */
 
     /**
      * Test 2.4

@@ -65,9 +65,10 @@ class AccountController extends RestfulController<Account> {
         params.max = Math.min(max?:10,100)
         if(params.id || params.handle) _handleParams(params)
         else {
-            def accts=Account.list(params)
-            if(accts) respond accts, model:[accoutCount: Account.count()]
-            else _respondError(404,"No accounts found")
+            if(params.format){
+                def accts=Account.list(params)
+                respond accts, model:[accoutCount: Account.count()]
+            } else _respondError(422,"Invalid account id")
         }
     }
 
@@ -121,16 +122,18 @@ class AccountController extends RestfulController<Account> {
                 if(ff) {
                     def yy=ff.id.join(",")
                     def q="select m.text,m.dateCreated,m.account.handle as account from Message m " +
-                    "where m.dateCreated >= ? "+
-                    "and m.account.id in (select a.id from Account a where a.id in ($yy)) "+
-                    "order by dateCreated desc"
+                            "where m.dateCreated >= ? "+
+                            "and m.account.id in (select a.id from Account a where a.id in ($yy)) "+
+                            "order by dateCreated desc"
                     def allMesgs=Message.executeQuery(q,[dt],[max:limit])
                     respond count:allMesgs.size(),messages:allMesgs,date:dt.toString()
-                } else _respondError(404,"No followers found")
-                
+                } else {
+                    response.status=200
+                    respond ff
+                }
+
             } else _respondError(422,"No invalid account")
         } else _respondError(404,"No account")
-
     }
 
     private _fetchFollow(params,max,offset,galf){
@@ -183,7 +186,10 @@ class AccountController extends RestfulController<Account> {
     private _showAccountWithCounts(acct){
         if(acct){
             def resp=[:]
-            acct.properties.each{k,v->resp.put(k,v)}
+            resp.put('id',acct.id)
+            resp.put('name',acct.name)
+            resp.put('email',acct.email)
+            resp.put('handle',acct.handle)
             resp.put('messageCount',acct.messages.size())
             resp.put('followerCount',acct.followers.size())
             resp.put('followingCount',acct.following.size())
