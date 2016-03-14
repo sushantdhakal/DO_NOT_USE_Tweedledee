@@ -1,119 +1,193 @@
 package tweedledee
 
+import geb.spock.GebSpec
+import grails.converters.JSON
 import grails.test.mixin.integration.Integration
-import grails.transaction.Rollback
-import spock.lang.Specification
+import groovyx.net.http.HttpResponseException
+import groovyx.net.http.RESTClient
+import spock.lang.Shared
+import spock.lang.Stepwise
+import spock.lang.Unroll
 
+@Unroll
 @Integration
-@Rollback
-class FollowersFunctionalSpec extends Specification {
+@Stepwise
+class FollowersFunctionalSpec extends GebSpec {
 
-    def accountsBeforeSaves
+    @Shared
+    def accountId
+
+    @Shared
+    def accountHandle
+
+    @Shared
+    def followerId
+
+    @Shared
+    def followerCount
+
+    @Shared
+    def followingCount
+
+    RESTClient restClient
 
     def setup() {
-        accountsBeforeSaves = Account.count()
+
+        restClient = new RESTClient(baseUrl)
+        def rr = restClient.get( path: "/init" )
+        if(rr.status==200) {
+            accountId=2
+            accountHandle="hulk_2"
+        }
+
     }
 
-    /**
-     * Test 1
-     * Requirement: A4
-     * Desc: Saving account with unique e-mail but non-unique handle
-     */
-    def 'Saving account with unique e-mail but non-unique handle'() {
-        setup:
-        def firstAccount = new Account(handle: 'TheRealSeanJohnson', name: 'Sean Johnson', email: 'johnsanSean@gmail.com', password: 'Orange1234')
-        def secondAccount = new Account(handle: 'TheRealSeanJohnson', name: 'Sean Johnson', email: 'seanJohnson@gmail.com', password: 'Orange1234')
+
+    // Req: F1
+    def 'one account can follow another'(){
 
         when:
-        firstAccount.save(failOnError: false)
-        secondAccount.save(failOnError: false)
+        def acct=new Account([ handle:'lone1', name:'NotFollowed', email:'thehulkster@hulkomania.me', password:'12345678aA' ])
+        def json=acct as JSON
+        def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
 
         then:
-        firstAccount.id
-        !secondAccount.id
-        secondAccount.errors.getFieldError('handle')
-        Account.count() == accountsBeforeSaves + 1
-    }
-
-    /**
-     * Test 2
-     * Requirement: A4
-     * Desc: Saving account with unique handle but non-unique email
-     */
-
-    def 'Saving account with unique handle but non-unique email'() {
-        setup:
-        def firstAccount = new Account(handle: 'WillSmith', name: 'Sean Johnson', email: 'WillSmith@gmail.com', password: 'Orange1234')
-        def secondAccount = new Account(handle: 'TheRealWillSmith', name: 'Sean Johnson', email: 'WillSmith@gmail.com', password: 'Orange1234')
-
+        resp.status == 201
+        resp.data.id
 
         when:
-        firstAccount.save(failOnError: false)
-        secondAccount.save(failOnError: false)
+        followerId = resp.data.id
+        resp = restClient.get( path: "/account/2" )
 
         then:
-        firstAccount.id
-        !secondAccount.id
-        secondAccount.errors.getFieldError('email')
-        Account.count() == accountsBeforeSaves + 1
-    }
-
-    /**
-     * Test 3
-     * Requirement: F1
-     * Desc:  An account may have multiple followers
-     */
-
-    def ' An account may have multiple followers'() {
-        setup:
-        def firstAccount = new Account(handle: 'superman', name: 'Clark Kent', email: 'kent@krypton.com', password: 'Banana1234')
-        def secondAccount = new Account(handle: 'batman', name: 'Bruce Wayne', email: 'wayne@gotham.net', password: 'Orange1234')
-        def thirdAccount = new Account(handle: 'IamLexLuther', name: 'Lex Luther', email: 'lexwillruleall@gmail.com', password: 'IamCrazy1234')
-        def fourthAccount = new Account(handle: 'FunnyMan', name: 'Joker Jack', email: 'jjFunny@aol.com', password: 'Hahahaha12345')
-
-        [secondAccount, thirdAccount, fourthAccount].each { firstAccount.addToFollowers(it) }
+        resp.status == 200
+        resp.data.followingCount
 
         when:
-        firstAccount.save(failOnError: true)
-        secondAccount.save(failOnError: true)
-        thirdAccount.save(failOnError: true)
-        fourthAccount.save(failOnError: true)
-
-        and:
-        firstAccount = Account.get(firstAccount.id)
+        def isFollowing = false
+        followingCount = resp.data.followingCount
+        resp = restClient.get( path: "/account/2/follow",query:[followerId:followerId] )
+        if(resp.status==200){
+            resp.data.following.each(){ if(it.id==followerId) isFollowing=true }
+        }
 
         then:
-        firstAccount.followers.size() == 3
-        firstAccount.followers.find { it.id == secondAccount.id }
-        firstAccount.followers.find { it.id == thirdAccount.id }
-        firstAccount.followers.find { it.id == fourthAccount.id }
+        resp.status == 200
+        resp.data.followingCount == followingCount+1
+        isFollowing
     }
 
-    /**
-     * Test 4
-     * Requirement: F2
-     * Desc: Two accounts may follow each other
-     */
-
-    def 'Two accounts may follow each other'() {
-        setup:
-        def firstAccount = new Account(handle: 'superman', name: 'Clark Kent', email: 'kent@krypton.com', password: 'Banana1234')
-        def secondAccount = new Account(handle: 'batman', name: 'Bruce Wayne', email: 'wayne@gotham.net', password: 'Orange1234')
-        firstAccount.addToFollowers(secondAccount)
-        secondAccount.addToFollowers(firstAccount)
+    // Req: F2
+    def 'account has followerCount and followingCount property'() {
 
         when:
-        firstAccount.save(failOnError: true)
-        secondAccount.save(failOnError: true)
-
-        and:
-        firstAccount = Account.get(firstAccount.id)
-        secondAccount = Account.get(secondAccount.id)
+        def resp = restClient.get(path: "/account/1")
 
         then:
-        firstAccount.followers.size() == 1
-        firstAccount.followers.find { it.id == secondAccount.id }
-        secondAccount.followers.size() == 1
-        secondAccount.followers.find { it.id == firstAccount.id }
+        resp.status == 200
+        resp.data.followerCount
+        resp.data.followingCount
+
+        when:
+        followerCount = resp.data.followerCount
+        followingCount = resp.data.followingCount
+        resp = restClient.get( path: "/account/1/followers" )
+
+        then:
+        resp.status == 200
+        resp.data.followers.size() == followerCount
+
+        when:
+        resp = restClient.get( path: "/account/2/following" )
+
+        then:
+        resp.status == 200
+        resp.data.following.size() == followingCount
+
     }
+
+    // Req: F3
+    def 'get followers for an account with optional limit and offset'() {
+
+        when:
+        def resp = restClient.get( path: "/account/2/followers" )
+
+        def hasFollowerId=false
+        def hasFollowerHandle=false
+        def hasFollowerName=false
+        def hasFollowerEmail=false
+        if(resp.status==200){
+            resp.data.followers.each(){
+                k,v->
+                    if(k=='id') hasFollowerId=true
+                    if(k=='handle') hasFollowerHandle=true
+                    if(k=='name') hasFollowerName=true
+                    if(k=='email') hasFollowerEmail=true
+            }
+        }
+
+        then:
+        resp.status == 200
+        resp.data.followers.size() != 0
+        hasFollowerId
+        hasFollowerHandle
+        hasFollowerName
+        hasFollowerEmail
+
+        when:
+        followerCount = resp.data.followers.size()
+        def limit = followerCount-1
+        resp = restClient.get( path: "/account/2/followers",query:[max:limit] )
+
+        then:
+        resp.status == 200
+        resp.data.followers.size() == limit
+
+        when:
+        followerId = resp.data.followers[0].id
+        resp = restClient.get( path: "/account/2/followers",query:[offset:2] )
+
+        then:
+        resp.status == 200
+        resp.data.followers[0].id != followerId
+
+    }
+
+    // Req: F4
+    def 'account feed that returns most recent messages with opional limit and show data after param'() {
+
+        when:
+        def resp = restClient.get( path: "/account/2/feed" )
+
+        then:
+        resp.status == 200
+        resp.data.messages
+        resp.data.messages.size() == resp.data.count
+
+        when:
+        resp = restClient.get( path: "/account/2/feed",query:[max:3] )
+
+        then:
+        resp.status == 200
+        resp.data.messages
+        resp.data.messages.size() == 3
+
+        when:
+        def dateBeforeParam = false
+        def dateParam = Date.parse('MM/dd/yyyy HH:mm:ss','03/12/2016 00:00:00')
+        resp = restClient.get( path: "/account/2/feed",query:[date:"03/12/2016"] )
+        if(resp.status==200){
+            resp.data.messages.each(){
+                if(it.dateCreated<dateParam) dateBeforeParam = true
+            }
+        }
+
+        then:
+        resp.status == 200
+        resp.data.messages
+        resp.data.messages.size() == resp.data.count
+        !dateBeforeParam
+
+    }
+
 }
