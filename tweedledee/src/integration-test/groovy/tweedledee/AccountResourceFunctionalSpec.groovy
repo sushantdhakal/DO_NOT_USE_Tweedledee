@@ -22,17 +22,13 @@ class AccountResourceFunctionalSpec extends GebSpec {
   @Shared
   def accountId
   def accountHandle
-  
+
   def validAccountData
-  def accountResource
   RESTClient restClient
 
   def setup() {
-    
     restClient = new RESTClient(baseUrl)
-
-    validAccountData = [ handle:'Hulk77', name:'Hulk Hogan', email:'thehulkster@hulkomania.me', password:'12345678aA' ]
-    
+    validAccountData = [handle: 'Hulk77', name: 'Hulk Hogan', email: 'thehulkster@hulkomania.me', password: '12345678aA']
   }
 
   /**
@@ -41,13 +37,13 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Creates an account resource
    */
   def 'creates a new acount'() {
-    
+
     given:
-    def acount = new Account( validAccountData )
+    def acount = new Account(validAccountData)
     def json = acount as JSON
 
     when:
-    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+    def resp = restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
 
     then:
     resp.status == 201
@@ -70,21 +66,20 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Requirement: A1
    * Desc: Fails to create a new account with same handle
    */
-  def 'fails ot create a new acount when using duplicate handle'() {
-    
+  def 'fails to create a new acount when using duplicate handle'() {
+
     given:
     def p = validAccountData
-    p.email='somethinelse@s.com'
-    def acount = new Account( p )
+    p.email = 'somethinelse@s.com'
+    def acount = new Account(p)
     def json = acount as JSON
 
     when:
-    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+    restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
 
     then:
     HttpResponseException err = thrown(HttpResponseException)
     err.statusCode == 422
-
   }
 
   /**
@@ -93,20 +88,20 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Fails to create a new account with same email
    */
   def 'fails ot create a new acount when using duplicate email'() {
-    
+
     given:
     def p = validAccountData
-    p.handle='SomethingElse'
-    def acount = new Account( p )
+    p.handle = 'SomethingElse'
+    def acount = new Account(p)
     def json = acount as JSON
 
     when:
-    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+    restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
 
     then:
     HttpResponseException err = thrown(HttpResponseException)
     err.statusCode == 422
-    
+
   }
 
   /**
@@ -133,7 +128,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Retrieves a saved account resource by id
    */
   def 'gets a new account by id'() {
-    
+
     when:
     def resp = restClient.get(path: "/account/${accountId}")
 
@@ -151,10 +146,10 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Retrieves a saved account resource by handle
    */
   def 'gets a new account by handle'() {
-    
+
     when:
-    def resp = restClient.get(path: "/account",query:[handle:validAccountData.handle] )
-    
+    def resp = restClient.get(path: "/account", query: [handle: validAccountData.handle])
+
     then:
     resp.status == 200
     resp.data.id == accountId
@@ -173,7 +168,7 @@ class AccountResourceFunctionalSpec extends GebSpec {
     given:
     def updatedName = 'Hulk MF Hogan'
     validAccountData.name = updatedName
-    def account = new Account( validAccountData )
+    def account = new Account(validAccountData)
     def json = account as JSON
 
     when:
@@ -220,14 +215,49 @@ class AccountResourceFunctionalSpec extends GebSpec {
    * Desc: Responds with error when missing account data sent in an account create request 
    */
   def 'fails to create account with missing account data in request: #desc'() {
-    
+
     given:
-    def aParams = [ handle : testHandle, name : testName, email : testEmail, password : testPassword ]
-    def account = new Account( aParams )
+    def aParams = [handle: testHandle, name: testName, email: testEmail, password: testPassword]
+    def account = new Account(aParams)
     def json = account as JSON
 
     when:
-    def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
+    def resp = restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
+
+    then:
+    HttpResponseException err = thrown(HttpResponseException)
+    err.statusCode == 422
+
+    when:
+    restClient.get(path: "/account")
+
+    then:
+    HttpResponseException err1 = thrown(HttpResponseException)
+    err1.statusCode == 422
+
+    where:
+    desc               | testHandle | testName | testEmail | testPassword
+    "missing handle"   | ""         | "Ted"    | "a@b.com" | "12345678aA"
+    "missing name"     | "trox"     | ""       | "a@b.com" | "12345678aA"
+    "missing email"    | "trox"     | "Ted"    | ""        | "12345678aA"
+    "missing password" | "trox"     | "Ted"    | "a@b.com" | ""
+
+  }
+
+  /**
+   * Test 1.6
+   * Requirement: A2
+   * Desc: Responds with error when invalid password sent in an account create request
+   */
+  def 'fails to create account if invalid password is sent in request: #desc #testPassword'() {
+
+    given:
+    def aParams = [handle: "TedX9", name: "Ted", email: "ted@bla.com", password: testPassword]
+    def account = new Account(aParams)
+    def json = account as JSON
+
+    when:
+    restClient.post(path: "/account", body: json as String, requestContentType: 'application/json')
 
     then:
     HttpResponseException err = thrown(HttpResponseException)
@@ -241,45 +271,10 @@ class AccountResourceFunctionalSpec extends GebSpec {
     err1.statusCode == 422
 
     where:
-    desc                  |  testHandle       |  testName |  testEmail    |  testPassword
-    "missing handle"      |  ""               |  "Ted"    |  "a@b.com"    |  "12345678aA"
-    "missing name"        |  "trox"           |  ""       |  "a@b.com"    |  "12345678aA"
-    "missing email"       |  "trox"           |  "Ted"    |  ""           |  "12345678aA"
-    "missing password"    |  "trox"           |  "Ted"    |  "a@b.com"    |  "" 
-
+    desc                  | testPassword
+    "less than 8 chars"   | "1" * 3
+    "over than 16 chars"  | "1" * 20
+    "no upper case chars" | "2a" * 4
+    "no lower case chars" | "1A" * 4
   }
-
-    /**
-     * Test 1.6
-     * Requirement: A2
-     * Desc: Responds with error when invalid password sent in an account create request 
-     */
-    def 'fails to create account if invalid password is sent in request: #desc #testPassword'(){
-
-      given:
-      def aParams = [ handle : "TedX9", name : "Ted", email : "ted@bla.com", password : testPassword ]
-      def account = new Account(aParams)
-      def json = account as JSON
-
-      when:
-      def resp = restClient.post( path: "/account", body: json as String, requestContentType: 'application/json' )
-
-      then:
-      HttpResponseException err = thrown(HttpResponseException)
-      err.statusCode == 422
-
-      when:
-      resp = restClient.get(path: "/account")
-
-      then:
-      HttpResponseException err1 = thrown(HttpResponseException)
-      err1.statusCode == 422
-
-      where:
-      desc                      |  testPassword
-      "less than 8 chars"       |  "1"*3
-      "over than 16 chars"      |  "1"*20
-      "no upper case chars"     |  "2a"*4
-      "no lower case chars"     |  "1A"*4
-    }
 }

@@ -15,12 +15,6 @@ import spock.lang.Unroll
 class FollowersFunctionalSpec extends GebSpec {
 
     @Shared
-    def accountId
-
-    @Shared
-    def accountHandle
-
-    @Shared
     def followerId
 
     @Shared
@@ -29,17 +23,24 @@ class FollowersFunctionalSpec extends GebSpec {
     @Shared
     def followingCount
 
+    @Shared
+    List createdAccounts
+
     def RESTClient restClient
 
     def setup() {
         restClient = new RESTClient(baseUrl)
     }
 
-
     // Req: F1
     def 'one account can follow another'(){
-        given:
-        restClient.get( path: "/init" )
+        when:
+        def initResponse = restClient.get( path: "/init" )
+        createdAccounts = initResponse.data
+
+        then:
+        initResponse.status == 200
+        createdAccounts.size() == 5
 
         when:
         def acct=new Account([ handle:'lone1', name:'NotFollowed', email:'thehulkster@hulkomania.me', password:'12345678aA' ])
@@ -49,10 +50,11 @@ class FollowersFunctionalSpec extends GebSpec {
         then:
         resp.status == 201
         resp.data.id
+        def followeeId = createdAccounts[1].id
 
         when:
         followerId = resp.data.id
-        resp = restClient.get( path: "/account/2" )
+        resp = restClient.get( path: "/account/${followeeId}" )
 
         then:
         resp.status == 200
@@ -61,7 +63,7 @@ class FollowersFunctionalSpec extends GebSpec {
         when:
         def isFollowing = false
         followingCount = resp.data.followingCount
-        resp = restClient.get( path: "/account/2/follow",query:[followerId:followerId] )
+        resp = restClient.get( path: "/account/${followeeId}/follow",query:[followerId:followerId] )
         if(resp.status==200){
             resp.data.following.each(){
                 if(it.id==followerId){
@@ -80,7 +82,7 @@ class FollowersFunctionalSpec extends GebSpec {
     def 'account has followerCount and followingCount property'() {
 
         when:
-        def resp = restClient.get(path: "/account/1")
+        def resp = restClient.get(path: "/account/${createdAccounts[0].id}")
 
         then:
         resp.status == 200
@@ -92,7 +94,7 @@ class FollowersFunctionalSpec extends GebSpec {
     def 'get followers for an account with optional limit and offset'() {
 
         when:
-        def resp = restClient.get( path: "/account/2/followers" )
+        def resp = restClient.get( path: "/account/${createdAccounts[1].id}/followers" )
 
         def hasFollowerId=false
         def hasFollowerHandle=false
@@ -121,7 +123,7 @@ class FollowersFunctionalSpec extends GebSpec {
         when:
         followerCount = resp.data.followers.size()
         def limit = followerCount-1
-        resp = restClient.get( path: "/account/2/followers",query:[max:limit] )
+        resp = restClient.get( path: "/account/${createdAccounts[1].id}/followers",query:[max:limit] )
 
         then:
         resp.status == 200
@@ -129,7 +131,7 @@ class FollowersFunctionalSpec extends GebSpec {
 
         when:
         followerId = resp.data.followers[0].id
-        resp = restClient.get( path: "/account/2/followers",query:[offset:2] )
+        resp = restClient.get( path: "/account/${createdAccounts[1].id}/followers",query:[offset:2] )
 
         then:
         resp.status == 200
@@ -141,7 +143,7 @@ class FollowersFunctionalSpec extends GebSpec {
     def 'account feed that returns most recent messages with opional limit and show data after param'() {
 
         when:
-        def resp = restClient.get( path: "/account/2/feed" )
+        def resp = restClient.get( path: "/account/${createdAccounts[1].id}/feed" )
 
         then:
         resp.status == 200
@@ -149,7 +151,7 @@ class FollowersFunctionalSpec extends GebSpec {
         resp.data.messages.size() == resp.data.count
 
         when:
-        resp = restClient.get( path: "/account/2/feed",query:[max:3] )
+        resp = restClient.get( path: "/account/${createdAccounts[1].id}/feed",query:[max:3] )
 
         then:
         resp.status == 200
@@ -159,7 +161,7 @@ class FollowersFunctionalSpec extends GebSpec {
         when:
         def dateBeforeParam = false
         def dateParam = Date.parse('MM/dd/yyyy HH:mm:ss','03/12/2016 00:00:00')
-        resp = restClient.get( path: "/account/2/feed",query:[date:"03/12/2016"] )
+        resp = restClient.get( path: "/account/${createdAccounts[1].id}/feed",query:[date:"03/12/2016"] )
 
         if(resp.status==200){
             resp.data.messages.each(){
