@@ -8,12 +8,14 @@ import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.Unroll
+import spock.lang.Ignore
+
 
 /**
  * Account: Functional Test 1
  * Desc: Testing account resource fetch and CRUD operations 
  */
-
+@Ignore
 @Unroll
 @Integration
 @Stepwise

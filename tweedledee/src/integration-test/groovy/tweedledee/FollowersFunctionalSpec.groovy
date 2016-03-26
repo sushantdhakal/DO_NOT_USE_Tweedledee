@@ -8,7 +8,9 @@ import groovyx.net.http.RESTClient
 import spock.lang.Shared
 import spock.lang.Stepwise
 import spock.lang.Unroll
+import spock.lang.Ignore
 
+@Ignore
 @Unroll
 @Integration
 @Stepwise
