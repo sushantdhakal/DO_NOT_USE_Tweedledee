@@ -3,7 +3,9 @@ package tweedledee
 import grails.test.mixin.integration.Integration
 import grails.transaction.Rollback
 import spock.lang.Specification
+import spock.lang.Ignore
 
+@Ignore
 @Integration
 @Rollback
 class AccountIntTestSpec extends Specification {
