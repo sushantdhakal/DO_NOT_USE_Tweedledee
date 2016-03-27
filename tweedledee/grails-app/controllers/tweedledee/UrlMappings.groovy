@@ -2,7 +2,7 @@
 class UrlMappings {
     
     static mappings = {
-        "/"(controller:"error",action:"unauthorized")
+      //  "/"(controller:"error",action:"unauthorized")
         "/account"(resources:'account'){
             "/message"(resources:'message')
         }

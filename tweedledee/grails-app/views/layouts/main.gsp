@@ -1,51 +1,74 @@
-<!doctype html>
-<html lang="en" class="no-js">
+<!DOCTYPE html>
+<html ng-app="gravitasApp" lang="en">
+
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <title>
-        <g:layoutTitle default="Grails"/>
-    </title>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-
-    <asset:stylesheet src="application.css"/>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title><g:layoutTitle default="Tweedledee...."/></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <asset:link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+    <asset:stylesheet href="bootstrap.css"/>
+    <asset:stylesheet href="tweddledee.css"/>
+    <asset:javascript src="application.js"/>
+    <asset:javascript src="tweedledee/tweedledee.js"></asset:javascript>
     <g:layoutHead/>
 </head>
-<body>
 
-    <div class="navbar navbar-default navbar-static-top" role="navigation">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/#">
-                    <i class="fa grails-icon">
-                        <asset:image src="grails-cupsonly-logo-white.svg"/>
-                    </i> Grails
-                </a>
-            </div>
-            <div class="navbar-collapse collapse" aria-expanded="false" style="height: 0.8px;">
-                <ul class="nav navbar-nav navbar-right">
-                    <g:pageProperty name="page.nav" />
-                </ul>
+<body class="loginContainer" ng-controller="sxd123">
+<div id="wrap">
+    <div class="page-header container">
+        <div class="tweedledeeWelcome">
+            <div class="span6">
+                Welcome to Tweedledee Application
             </div>
         </div>
     </div>
 
-    <g:layoutBody/>
+    <div id="login-holder" class="container" style="width: 300px;">
 
-    <div class="footer" role="contentinfo"></div>
 
-    <div id="spinner" class="spinner" style="display:none;">
-        <g:message code="spinner.alt" default="Loading&hellip;"/>
+        <!--
+        <div id="login-error" class="alert alert-error">
+            <button type="button" class="close" onclick="$('#login-error').hide();">&times;</button>
+            Email address and/or password incorrect.
+        </div>
+        -->
+
+        <div id="loginbox">
+            <div id="innerLogin" ng-controller="loginController">
+                <form name="loginForm" role="form" ng-submit="logIn()" autocomplete="off">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input id="username" class="form-control" type="text"/>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input id="password" class="form-control" type="password"/>
+                    </div>
+                    <input type="submit" class="btn btn-primary" value="Login"/>
+                </form>
+            </div>
+
+            <div class="clear"></div>
+        </div>
     </div>
 
-    <asset:javascript src="application.js"/>
+    <div id="content" class="container">
+        <div class="span6" style="text-align: right;" ng-show="isAuthenticated">
+            Welcome, {{currentUser}}.
+            <a href="" ng-controller="logoutController" ng-click="logout()">[Log out]</a>
+        </div>
+        <g:layoutBody/>
+    </div>
 
+    <div class="footer panel-footer">
+        <div class="container">
+            <p>
+                Version: 1.0
+            </p>
+        </div>
+    </div>
+</div>
 </body>
 </html>

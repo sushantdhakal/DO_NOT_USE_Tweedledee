@@ -11,6 +11,9 @@ class LoginController extends RestfulController<Account> {
 	}
 
 	def auth(){
+		//Here check to see if the user exists in the database
+
+		//If yes,
 
 	}
 

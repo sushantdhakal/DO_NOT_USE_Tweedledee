@@ -1,6 +1,11 @@
-.idea/
-out/
-build/
-classes/
-.gradle/
 *.iml
+*ipr
+*iws
+.idea/
+.git/
+.gradle/
+/build/
+/target/
+/classes/
+/gradle/
+/out/
