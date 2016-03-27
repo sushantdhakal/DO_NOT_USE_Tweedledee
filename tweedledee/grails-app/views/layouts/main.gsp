@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="gravitasApp" lang="en">
+<html ng-app="tweedledeeApp" lang="en">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -9,7 +9,9 @@
     <asset:link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
     <asset:stylesheet href="bootstrap.css"/>
     <asset:stylesheet href="tweddledee.css"/>
+
     <asset:javascript src="application.js"/>
+    <script src="bower/angular/angular.js"></script>
     <asset:javascript src="tweedledee/tweedledee.js"></asset:javascript>
     <g:layoutHead/>
 </head>
@@ -36,7 +38,7 @@
 
         <div id="loginbox">
             <div id="innerLogin" ng-controller="loginController">
-                <form name="loginForm" role="form" ng-submit="logIn()" autocomplete="off">
+                <form name="loginForm" role="form" ng-submit="loginController()" autocomplete="off">
                     <div class="form-group">
                         <label for="username">Username</label>
                         <input id="username" class="form-control" type="text"/>
