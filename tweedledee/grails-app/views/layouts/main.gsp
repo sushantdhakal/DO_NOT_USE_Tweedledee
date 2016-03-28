@@ -12,7 +12,7 @@
 
     <asset:javascript src="jquery-2.2.0.min.js"></asset:javascript>
     <asset:javascript src="application.js"></asset:javascript>
-    <asset:javascript src="tweedledee/tweedledee.js"></asset:javascript>
+    <asset:javascript src="tweedledee/controllers/accountHandler.js"></asset:javascript>
 
 </head>
 
@@ -54,7 +54,7 @@
                     </div>
                     <input type="submit" ng-controller="loginController" ng-click="login()" class="btn btn-primary" value="Login"/>
                     &nbsp;&nbsp;&nbsp;
-                    <a ng-href="/partials/login.html" class="newAccount">Create New Account</a>
+                    <a href="" class="newAccount" ng-controller="loginController" ng-click="createNewAccount()">Create New Account</a>
                 </form>
             </div>
 

@@ -1,12 +1,9 @@
 angular.module('app', []);
 
-
-// Define a controller called 'welcomeController'
-angular.module('app').controller('loginController', ['$scope', '$http', '$window', function($scope, $http, $window) {
+angular.module('app').controller('loginController', ['$scope', '$http', '$window', '$location', function($scope, $http, $window, $location) {
 
         $scope.username = "";
         $scope.badUser = "";
-        $scope.currentUser = "jhdfjhsdf";
         $scope.login = function() {
             var data = $.param({
                 t_uname: $scope.t_username,
@@ -21,4 +18,11 @@ angular.module('app').controller('loginController', ['$scope', '$http', '$window
                     $window.alert("Wrong username/password");
                 });
         }
+
+    $scope.createNewAccount = function(){
+      //  $window.location.href = "";
+       // $window.location.href = 'partials/createAccount.html';
+        console.log("Going to create a new account");
+        $location.path("/partials/createAccount.html");
+    }
 }]);
