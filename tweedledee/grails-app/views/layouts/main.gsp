@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html ng-app="tweedledeeApp" lang="en">
+<html lang="en">
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -10,13 +10,13 @@
     <asset:stylesheet href="bootstrap.css"/>
     <asset:stylesheet href="tweddledee.css"/>
 
-    <asset:javascript src="application.js"/>
-    <script src="bower/angular/angular.js"></script>
+    <asset:javascript src="jquery-2.2.0.min.js"></asset:javascript>
+    <asset:javascript src="application.js"></asset:javascript>
     <asset:javascript src="tweedledee/tweedledee.js"></asset:javascript>
-    <g:layoutHead/>
+
 </head>
 
-<body class="loginContainer" ng-controller="sxd123">
+<body ng-app="app">
 <div id="wrap">
     <div class="page-header container">
         <div class="tweedledeeWelcome">
@@ -25,6 +25,10 @@
             </div>
         </div>
     </div>
+
+    <p>
+        {{badUser}}
+    </p>
 
     <div id="login-holder" class="container" style="width: 300px;">
 
@@ -37,32 +41,34 @@
         -->
 
         <div id="loginbox">
-            <div id="innerLogin" ng-controller="loginController">
-                <form name="loginForm" role="form" ng-submit="loginController()" autocomplete="off">
+            <div id="innerLogin">
+                <form name="loginForm" role="form" autocomplete="off">
                     <div class="form-group">
                         <label for="username">Username</label>
-                        <input id="username" class="form-control" type="text"/>
+                        <input ng-model="t_username" id="username" class="form-control" type="text"/>
                     </div>
 
                     <div class="form-group">
                         <label for="password">Password</label>
-                        <input id="password" class="form-control" type="password"/>
+                        <input ng-model="t_password" id="password" class="form-control" type="password"/>
                     </div>
-                    <input type="submit" class="btn btn-primary" value="Login"/>
+                    <input type="submit" ng-controller="loginController" ng-click="login()" class="btn btn-primary" value="Login"/>
+                    &nbsp;&nbsp;&nbsp;
+                    <a ng-href="/partials/login.html" class="newAccount">Create New Account</a>
                 </form>
             </div>
 
             <div class="clear"></div>
         </div>
     </div>
-
+<!--
     <div id="content" class="container">
         <div class="span6" style="text-align: right;" ng-show="isAuthenticated">
             Welcome, {{currentUser}}.
             <a href="" ng-controller="logoutController" ng-click="logout()">[Log out]</a>
         </div>
-        <g:layoutBody/>
     </div>
+    -->
 
     <div class="footer panel-footer">
         <div class="container">
