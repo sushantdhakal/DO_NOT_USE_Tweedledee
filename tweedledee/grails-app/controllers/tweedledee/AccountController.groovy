@@ -226,7 +226,7 @@ class AccountController extends RestfulController<Account> {
         def userName = request.JSON.ui_userName
         def password = request.JSON.ui_password
 
-        def q="select handle, password from Account where handle='$userName' and password='$password'"
+        def q="select name, handle, password, email, dateCreated from Account where handle='$userName' and password='$password'"
         def fullQ = Account.executeQuery(q)
 
         if(fullQ.size() == 1){
