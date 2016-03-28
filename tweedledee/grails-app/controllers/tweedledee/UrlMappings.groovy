@@ -13,7 +13,7 @@ class UrlMappings {
         "/messages/search"(controller:'message',action:'searchMessages')
         "/account/$accountId/feed"(controller:'account',action:'showFeed')
         "/init"(controller:'account',action:'initMe')
-        "/login"(controller:'login',action:'auth')
+        "/login"(controller:'account',action:'auth')
     }
 }
 
