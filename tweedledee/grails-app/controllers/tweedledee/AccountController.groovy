@@ -223,7 +223,18 @@ class AccountController extends RestfulController<Account> {
     }
 
     def auth(){
-        _handleAccountId("batman")
+        def userName = request.JSON.ui_userName
+        def password = request.JSON.ui_password
+
+        def q="select handle, password from Account where handle='$userName' and password='$password'"
+        def fullQ = Account.executeQuery(q)
+
+        if(fullQ.size() == 1){
+            response.status = 200
+        }
+        else{
+            _respondError(404,"No account found")
+        }
     }
     
 }
