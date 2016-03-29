@@ -7,10 +7,24 @@ class AccountController extends RestfulController<Account> {
     
     static responseFormats = ['json', 'xml']
 
+    //def passwordEncoder
+
     AccountController() {
         super(Account)
     }
 
+    def initAdmin(){
+        def pw='12345678pP'
+        Account.executeUpdate("delete Account where id=id")
+        def admin = new Account([handle:'Admin',name:'admin',password:pw,email:'admin@admin.com'])
+        def role = new Role(authority:'ROLE_READ')
+        def ac = new AccountRole(user:admin,role:role)
+        admin.save()
+        role.save()
+        ac.save()
+        def ss=Account.list()
+        respond ss
+    }
     // This method is for setting up data only!
     def initMe(){
         def rr=[]
@@ -22,6 +36,7 @@ class AccountController extends RestfulController<Account> {
             def account = new Account( pp )
             account.save()
             if(account.handle){
+                //new AccountRole(user:account,role:role).save()
                 def ah=account.handle
                 (1..25).each {
                     def ct2=it
