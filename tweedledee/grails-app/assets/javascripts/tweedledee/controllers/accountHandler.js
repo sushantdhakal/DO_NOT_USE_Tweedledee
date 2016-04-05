@@ -1,6 +1,7 @@
-angular.module('app', []);
+var app = angular.module('app', []);
 
-angular.module('app').controller('loginController', ['$scope', '$http', '$window', '$location', function($scope, $http, $window, $location) {
+//after you pull the router, look at the state that you inject within the controller, so that you can redirect the page
+app.controller('loginController', ['$scope', '$http', '$window', '$location', function($scope, $http, $window, $location) {
 
     $scope.badUser = "";
 
@@ -19,6 +20,7 @@ angular.module('app').controller('loginController', ['$scope', '$http', '$window
 
         $http(req).success(function(data, status) {
                 $scope.goodUser = "Hellooooooo";
+
             //TODO: Redirect to User Details Page
             })
             .error(function () {
