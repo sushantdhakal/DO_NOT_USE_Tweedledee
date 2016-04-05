@@ -32,7 +32,9 @@ bower {
     source 'angular.js'
     source 'angular-csp.css'
   }
-
+    'angular-route'('1.3.x') {
+        source 'angular-route.js'
+    }
 }
 
 version "0.1"
@@ -61,6 +63,9 @@ dependencyManagement {
     }
     applyMavenExclusions false
 }
+
+compileJava.dependsOn bowerInstall
+clean.dependsOn bowerClean
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-logging"
