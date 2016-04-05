@@ -1,4 +1,4 @@
-var app = angular.module('app', []);
+var app = angular.module('app', ['ngRoute']);
 
 //after you pull the router, look at the state that you inject within the controller, so that you can redirect the page
 app.controller('loginController', ['$scope', '$http', '$window', '$location', function($scope, $http, $window, $location) {
@@ -51,6 +51,5 @@ app.controller('loginController', ['$scope', '$http', '$window', '$location', fu
       //  $window.location.href = "";
        // $window.location.href = 'partials/createAccount.html';
         console.log("Going to create a new account");
-        $location.path("/partials/createAccount.html");
     }
 }]);
