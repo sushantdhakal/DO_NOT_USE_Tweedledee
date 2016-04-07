@@ -31,7 +31,7 @@ class AccountController extends RestfulController<Account> {
     def initMe(){
         def rr=[]
         Message.executeUpdate("delete Message where id=id")
-        Account.executeUpdate("delete Account where id=id")
+        Account.executeUpdate("delete Account where name!='admin'")
         (1..5).each {
             def ct1=it
             def pp=[handle:"hulk_${ct1}",name:'Hulk Hogan',email:"hulk${ct1}@iam.me",password:'12345678aA']

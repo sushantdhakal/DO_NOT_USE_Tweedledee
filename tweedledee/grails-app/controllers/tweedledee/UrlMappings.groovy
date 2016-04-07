@@ -26,6 +26,13 @@ class UrlMappings {
         "/init"(controller:'account',action:'initMe')
         "/login"(controller:'account',action:'auth')
         "/punk"(controller:'account',action:'initAdmin')
+
+        //These are behind security wall for now
+        "/api/init"(controller:'account',action:'initMe')
+        "/api/account"(resources:'account'){
+            "/message"(resources:'message')
+        }
+        "/api/account/$accountId/feed"(controller:'account',action:'showFeed')
     }
 }
 
