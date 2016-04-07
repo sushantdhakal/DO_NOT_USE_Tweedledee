@@ -2,7 +2,18 @@
 class UrlMappings {
     
     static mappings = {
-       //"/"(view:"index")
+       "/$controller/$action?/$id?(.$format)?" {
+          constraints {
+            // apply constraints here
+          }
+        }
+        "/"(view:'/index')
+        //"500"(controller:'Error',action: 'internalServerError')
+        //"401"(controller:'Error',action: 'unauthorized')
+        //"403"(controller:'Error',action: 'forbidden')
+        //"404"(controller:'Error',action: 'notFound')
+        //"405"(controller:'Error',action: 'notallowed')
+        //"422"(controller:'Error',action: 'unprocessable')
         "/account"(resources:'account'){
             "/message"(resources:'message')
         }
@@ -13,7 +24,6 @@ class UrlMappings {
         "/messages/search"(controller:'message',action:'searchMessages')
         "/account/$accountId/feed"(controller:'account',action:'showFeed')
         "/init"(controller:'account',action:'initMe')
-        "/"(view:'/index')
         "/login"(controller:'account',action:'auth')
         "/punk"(controller:'account',action:'initAdmin')
     }

@@ -15,15 +15,17 @@ class AccountController extends RestfulController<Account> {
 
     def initAdmin(){
         def pw='12345678pP'
+        Message.executeUpdate("delete Message where id=id")
+        AccountRole.executeUpdate("delete AccountRole where id=id")
+        Role.executeUpdate("delete Role where id=id")
         Account.executeUpdate("delete Account where id=id")
         def admin = new Account([handle:'Admin',name:'admin',password:pw,email:'admin@admin.com'])
         def role = new Role(authority:'ROLE_READ')
-        def ac = new AccountRole(user:admin,role:role)
+        def ac = new AccountRole(account:admin,role:role)
         admin.save()
         role.save()
         ac.save()
-        def ss=Account.list()
-        respond ss
+        respond accounts:Account.list()
     }
     // This method is for setting up data only!
     def initMe(){
@@ -235,21 +237,6 @@ class AccountController extends RestfulController<Account> {
     private _respondError(code,mesg){
         response.status=code
         respond error:code,message:"$mesg"
-    }
-
-    def auth(){
-        def userName = request.JSON.ui_userName
-        def password = request.JSON.ui_password
-
-        def q="select name, handle, password, email, dateCreated from Account where handle='$userName' and password='$password'"
-        def fullQ = Account.executeQuery(q)
-
-        if(fullQ.size() == 1){
-            response.status = 200
-        }
-        else{
-            _respondError(404,"No account found")
-        }
     }
     
 }

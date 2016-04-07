@@ -9,17 +9,20 @@ grails.plugin.springsecurity.filterChain.chainMap = [
 ]
 
 grails.plugin.springsecurity.rest.token.storage.useGorm = true
-grails.plugin.springsecurity.rest.token.storage.gorm.tokenDomainClassName = 'grails.tweedledee.AuthenticationToken'
+grails.plugin.springsecurity.rest.token.storage.gorm.tokenDomainClassName = 'tweedledee.AuthenticationToken'
 grails.plugin.springsecurity.rest.token.validation.useBearerToken = false
 grails.plugin.springsecurity.rest.token.validation.headerName = 'X-Auth-Token'
 
-grails.plugin.springsecurity.userLookup.userDomainClassName = 'grails.tweedledee.Account'
-grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'grails.tweedledee.AccountRole'
-grails.plugin.springsecurity.authority.className = 'grails.tweedledee.Role'
+grails.plugin.springsecurity.userLookup.userDomainClassName = 'tweedledee.Account'
+grails.plugin.springsecurity.userLookup.usernamePropertyName = 'name'
+
+grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'tweedledee.AccountRole'
+
+grails.plugin.springsecurity.authority.className = 'tweedledee.Role'
 
 grails.plugin.springsecurity.securityConfigType = 'InterceptUrlMap'
 grails.plugin.springsecurity.interceptUrlMap = [
 	[
-	    [pattern: '/**', access: ['ROLE_READ']]
+	    [pattern: '/api/**', access: ['ROLE_READ']]
 	]
 ]
