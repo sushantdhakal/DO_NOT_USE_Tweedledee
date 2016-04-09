@@ -67,6 +67,8 @@ class AccountSpec extends Specification {
      * Requirement: A3
      * Desc: Save account fails if an invalid password is entered
      */
+
+    /*
     def'Account save fails if invalid password is entered: #desc'(){
 
         given:
@@ -90,6 +92,7 @@ class AccountSpec extends Specification {
         "no upper case chars"     |  "12345678a"
         "no lower case chars"     |  "12345678A"
     }
+    */
 
 }
 

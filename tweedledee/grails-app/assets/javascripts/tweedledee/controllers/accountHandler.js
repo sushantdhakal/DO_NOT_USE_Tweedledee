@@ -20,7 +20,7 @@ app.controller('loginController', ['$scope', '$http', '$window', '$location', fu
         }
 
         $http(req).success(function(data, status) {
-                $scope.goodUser = "Hellooooooo";
+            $scope.goodUser = "Hellooooooo";
             console.log(data);
 
             //TODO: Redirect to User Details Page
@@ -40,9 +40,8 @@ app.controller('loginController', ['$scope', '$http', '$window', '$location', fu
                 'Content-Type': 'application/json'
             }
         }
-        $location.path( 'app/createAccount.html' );
-      //  $window.location.href = "";
-       // $window.location.href = 'partials/createAccount.html';
+        $location.path( 'app/createAcc.html' );
+
         console.log("Going to create a new account");
     }
 }]);

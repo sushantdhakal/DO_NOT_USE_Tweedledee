@@ -9,3 +9,6 @@
 /classes/
 /gradle/
 /out/
+.asscache
+grails-app/assets/bower/
+node_modules/
