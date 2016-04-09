@@ -1,7 +1,7 @@
 angular.module("app").config(function($routeProvider) {
     $routeProvider
-        .when('/newAccount', {
-            templateUrl: 'assets/partials/createAccount.html',
-            controller: 'loginController'
+        .when('/app/login', {
+            templateUrl: '/app/createAccount.html',
+            //controller: 'loginController'
         })
 });

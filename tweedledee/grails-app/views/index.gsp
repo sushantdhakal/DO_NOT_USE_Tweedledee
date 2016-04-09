@@ -19,10 +19,14 @@
 
 <body ng-app="app">
 <div id="wrap">
-    <div class="page-header container">
+    <div style="color: #a60000; margin: 0px; background: #faebd7" class="page-header container">
         <div class="tweedledeeWelcome">
             <div class="span6">
-                Welcome to Tweedledee Application
+                <p align="center" style="font-size: large; margin: 20px; font-family: Calibri; color: #a60000; font-style: italic">
+                    <br>
+                    Welcome to Tweedledee Application
+                </p>
+                <br>
             </div>
         </div>
     </div>
@@ -31,17 +35,8 @@
         {{badUser}}
     </p>
 
-    <div id="login-holder" class="container" style="width: 300px;">
-
-
-        <!--
-        <div id="login-error" class="alert alert-error">
-            <button type="button" class="close" onclick="$('#login-error').hide();">&times;</button>
-            Email address and/or password incorrect.
-        </div>
-        -->
-
-        <div id="loginbox">
+    <div class="loginBox" id="login-holder" class="container" align="center">
+        <div id="loginbox" style="margin: 50px; width: 300px;" align="left">
             <div id="innerLogin">
                 <form name="loginForm" role="form" autocomplete="off">
                     <div class="form-group">
@@ -53,6 +48,7 @@
                         <label for="password">Password</label>
                         <input ng-model="t_password" id="password" class="form-control" type="password"/>
                     </div>
+
                     <input type="submit" ng-controller="loginController" ng-click="login()" class="btn btn-primary" value="Login"/>
                     &nbsp;&nbsp;&nbsp;
                     <a href="#/newAccount" class="newAccount" ng-controller="loginController" ng-click="createNewAccount()">Create New Account</a>
@@ -62,18 +58,12 @@
             <div class="clear"></div>
         </div>
     </div>
-    <!--
-    <div id="content" class="container">
-        <div class="span6" style="text-align: right;" ng-show="isAuthenticated">
-            Welcome, {{currentUser}}.
-            <a href="" ng-controller="logoutController" ng-click="logout()">[Log out]</a>
-        </div>
-    </div>
-    -->
+
+    <br>
 
     <div class="footer panel-footer">
         <div class="container">
-            <p>
+            <p align="center">
                 Version: 1.0
             </p>
         </div>

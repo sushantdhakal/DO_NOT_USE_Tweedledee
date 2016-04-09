@@ -11,5 +11,6 @@
 //= require ../bower/angular/angular.js
 //= require_self
 //= require_tree app
+var app = angular.module('app', ['ngRoute']);
 
 
