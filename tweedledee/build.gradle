@@ -19,21 +19,28 @@ plugins {
 }
 
 bower {
+    
+    'jquery'('2.2.3'){
+        source 'dist/jquery.js'
+    }
 
-  'bootstrap'('3.3.x') {
-    source 'dist/css/bootstrap.css' >> 'css/'
-    source 'dist/css/bootstrap-theme.css' >> 'css/'
-    source 'dist/fonts/**' >> 'fonts/'
-    source 'dist/js/bootstrap.js'
-    excludes 'jquery'
-  }
+    'bootstrap'('3.3.x') {
+        source 'dist/css/bootstrap.css' >> 'css/'
+        source 'dist/css/bootstrap-theme.css' >> 'css/'
+        source 'dist/fonts/**' >> 'fonts/'
+        source 'dist/js/bootstrap.js'
+    }
 
-  'angular'('1.3.x') {
-    source 'angular.js'
-    source 'angular-csp.css'
-  }
-    'angular-route'('1.3.x') {
-        source 'angular-route.js'
+    'angular'('1.3.x') {
+        source 'angular.js'
+    }
+
+    'angular-ui-router'('0.2.x') {
+        source 'release/angular-ui-router.js'
+    }
+
+    'lodash'('4.9.x') {
+        source 'lodash.js'
     }
 }
 
@@ -68,6 +75,7 @@ compileJava.dependsOn bowerInstall
 clean.dependsOn bowerClean
 
 dependencies {
+    assets "com.craigburke.angular:angular-template-asset-pipeline:2.2.7"
     compile "org.springframework.boot:spring-boot-starter-logging"
     compile "org.springframework.boot:spring-boot-autoconfigure"
     compile "org.grails:grails-core"
