@@ -1,10 +1,14 @@
-angular.module('app').controller('feedController', function ($resource, $scope, $http) {
+angular.module('app').controller('feedController', function ($resource, $scope, $http, $rootScope, securityService) {
 
   $scope.userMessages = [];
+  var temp3 = securityService.currentUser();
+  var userNameParameter = temp3.username;
+
+  $scope.currentUserLoggedIn =  userNameParameter;
 
   $http({
     method: 'GET',
-    url: '/message/Admin/messages'
+    url: '/message/'+userNameParameter+'/messages'
   }).then(function successCallback(response) {
     var temp="";
     console.log(response);
@@ -14,7 +18,6 @@ angular.module('app').controller('feedController', function ($resource, $scope, 
       tempArr.push(temp[i].dateCreated, temp[i].text)
       $scope.userMessages.push(tempArr);
     }
-    cosole.log($scope.userMessages)
     // this callback will be called asynchronously
     // when the response is available
   }, function errorCallback(response) {

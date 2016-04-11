@@ -13,8 +13,12 @@
 <body class="mainBodyDiv" ng-app="app">
 <h1>TweedleDee</h1>
 
+
 <div ng-view>
-</div>
+    <div ng-show="currentUserLoggedIn != null">
+        Welcome {{currentUserLoggedIn}}
+    </div>
+    </div>
 
 </body>
 </html>

@@ -12,10 +12,18 @@ angular.module('app')
         templateUrl: '/app/home.html',
         controller: 'homeController'
       })
+        .when('/profile', {
+          templateUrl: '/app/profile.html',
+          controller: 'profileController'
+        })
       .when('/feed', {
         templateUrl: '/app/feed.html',
         controller: 'feedController'
       })
+        .when('/logout', {
+            templateUrl: '/app/logout.html',
+            controller: 'logoutController'
+        })
       .otherwise({
         redirectTo: '/feed'
       })

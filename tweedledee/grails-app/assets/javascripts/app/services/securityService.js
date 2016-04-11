@@ -22,6 +22,10 @@ angular.module('app').factory('securityService', ['$http', '$rootScope', functio
     return $http.post('/api/login', loginPayload).then(loginSuccess, loginFailure);
   };
 
+  service.logout = function (){
+    currentUser = null;
+  }
+
   service.currentUser = function () {
     return currentUser;
   };

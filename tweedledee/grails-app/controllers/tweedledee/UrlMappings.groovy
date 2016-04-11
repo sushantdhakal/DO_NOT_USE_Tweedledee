@@ -32,6 +32,7 @@ class UrlMappings {
         "/api/account"(resources:'account'){
             "/message"(resources:'message')
         }
+        "/api/account/$accountId"(controller:'account',action:'showFeed')
         "/api/account/$accountId/feed"(controller:'account',action:'showFeed')
     }
 }
