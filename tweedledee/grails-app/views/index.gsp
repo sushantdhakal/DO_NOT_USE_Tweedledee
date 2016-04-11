@@ -1,17 +1,20 @@
+<!doctype html>
 <html>
 <head>
-    <title>Tweedledee</title>
-
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <asset:stylesheet src="application.css" />
-    <asset:javascript src="application.js" />
+    <asset:javascript src="application.js"/>
+    <asset:stylesheet src="application.css"/>
+    <asset:stylesheet src="tweedledee.css"/>
+    <asset:stylesheet src="simple-sidebar.css"/>
 </head>
-<body ng-app="app">
-Hi
-<div ui-view></div>
+
+<body class="mainBodyDiv" ng-app="app">
+<h1>TweedleDee</h1>
+
+<div ng-view>
+</div>
+
 </body>
 </html>
